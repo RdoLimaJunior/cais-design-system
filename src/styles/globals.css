@@ -1,0 +1,391 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-display: swap;
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  src: url('../assets/farol/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Tokens copiados do CSS publicado do Farol (farol.institutocais.org.br). */
+:root {
+  --radius: 0.45rem;
+  --border: oklch(92.8% 0.006 264.531);
+  --input: oklch(92.8% 0.006 264.531);
+  --ring: oklch(70.7% 0.022 261.325);
+  --background: oklch(100% 0 0);
+  --foreground: oklch(13% 0.028 261.692);
+  /* Azul de marca CAIS (Cores / Marca). Antes era um azul-petróleo herdado do CSS do FAROL que nenhuma tela usava. */
+  --primary: #0089e2;
+  --primary-foreground: oklch(98% 0.02 201);
+  --secondary: oklch(96.7% 0.001 286.375);
+  --secondary-foreground: oklch(21% 0.006 285.885);
+  --muted: oklch(96.7% 0.003 264.542);
+  --muted-foreground: oklch(55.1% 0.027 264.364);
+  --accent: oklch(61% 0.11 222);
+  --accent-foreground: oklch(98% 0.02 201);
+  --destructive: oklch(57.7% 0.245 27.325);
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(13% 0.028 261.692);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(13% 0.028 261.692);
+  --sidebar: oklch(98.5% 0.002 247.839);
+  --sidebar-foreground: oklch(13% 0.028 261.692);
+  --sidebar-primary: oklch(61% 0.11 222);
+  --sidebar-primary-foreground: oklch(98% 0.02 201);
+  --sidebar-accent: oklch(61% 0.11 222);
+  --sidebar-accent-foreground: oklch(98% 0.02 201);
+  --sidebar-border: oklch(92.8% 0.006 264.531);
+  --sidebar-ring: oklch(70.7% 0.022 261.325);
+
+  /* Cores de estado, todas do CAIS master: sucesso (Cores / Estado), azul de marca e o âmbar já usado no FAROL.
+     "Perigo" é o --destructive. Fundo suave de estado é a própria cor com 10% de opacidade (bg-success/10). */
+  --success: #16a34a;
+  --warning: #d97706;
+  --info: #0089e2;
+}
+
+.dark {
+  --border: oklch(100% 0 0 / 0.1);
+  --input: oklch(100% 0 0 / 0.15);
+  --ring: oklch(55.1% 0.027 264.364);
+  --background: oklch(13% 0.028 261.692);
+  --foreground: oklch(98.5% 0.002 247.839);
+  --primary: color-mix(in oklab, #0089e2 75%, white);
+  --primary-foreground: oklch(30% 0.05 230);
+  --secondary: oklch(27.4% 0.006 286.033);
+  --secondary-foreground: oklch(98.5% 0 0);
+  --muted: oklch(27.8% 0.033 256.848);
+  --muted-foreground: oklch(70.7% 0.022 261.325);
+  --accent: oklch(71% 0.13 215);
+  --accent-foreground: oklch(30% 0.05 230);
+  --destructive: oklch(70.4% 0.191 22.216);
+  --card: oklch(21% 0.034 264.665);
+  --card-foreground: oklch(98.5% 0.002 247.839);
+  --popover: oklch(21% 0.034 264.665);
+  --popover-foreground: oklch(98.5% 0.002 247.839);
+  --sidebar: oklch(21% 0.034 264.665);
+  --sidebar-foreground: oklch(98.5% 0.002 247.839);
+  --sidebar-primary: oklch(80% 0.13 212);
+  --sidebar-primary-foreground: oklch(30% 0.05 230);
+  --sidebar-accent: oklch(71% 0.13 215);
+  --sidebar-accent-foreground: oklch(30% 0.05 230);
+  --sidebar-border: oklch(100% 0 0 / 0.1);
+  --sidebar-ring: oklch(55.1% 0.027 264.364);
+
+  --success: color-mix(in oklab, #16a34a 75%, white);
+  --warning: color-mix(in oklab, #d97706 75%, white);
+  --info: color-mix(in oklab, #0089e2 75%, white);
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', Inter, system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* O Tailwind v4 deixa botões com cursor padrão; o FAROL restaura a mãozinha em tudo que é clicável. */
+  a,
+  button:not(:disabled),
+  label[for] {
+    cursor: pointer;
+  }
+
+  label:has(input) {
+    cursor: pointer;
+  }
+}
+
+/*
+ * Faixas de tela do ecossistema CAIS. Mobile é tudo abaixo de `md`.
+ *   mobile            até 767px    (sem prefixo)
+ *   tablet            768 a 1023px (md:)
+ *   desktop pequeno   1024 a 1439px (lg:)
+ *   telas grandes     1440px ou mais (xl:); 2xl: a partir de 1920px
+ */
+@theme {
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 90rem;
+  --breakpoint-2xl: 120rem;
+}
+
+/*
+ * Tema escuro: os tokens `.dark` acima cobrem os componentes shadcn. As regras abaixo cobrem as cores escritas
+ * direto nas classes dos componentes do FAROL (fundos claros, textos cinza, bordas). Vêm antes do alto contraste,
+ * que tem precedência quando os dois estão ligados.
+ */
+:root.dark {
+  color-scheme: dark;
+}
+
+:root.dark .bg-\[\#e3e6eb\],
+:root.dark .bg-\[\#E5E7EB\],
+:root.dark .bg-\[\#eef1f7\] {
+  background-color: var(--background);
+}
+
+:root.dark .bg-white,
+:root.dark .bg-zinc-50,
+:root.dark .bg-\[\#f9fafb\],
+:root.dark .bg-\[\#fbfcfd\],
+:root.dark .bg-\[\#F3F4F6\] {
+  background-color: var(--card);
+}
+
+:root.dark .bg-zinc-100,
+:root.dark .bg-blue-50,
+:root.dark .bg-sky-50,
+:root.dark .bg-green-50,
+:root.dark .bg-red-50,
+:root.dark .bg-\[\#e8f5ff\] {
+  background-color: var(--muted);
+}
+
+:root.dark .text-black,
+:root.dark .text-zinc-700,
+:root.dark .text-zinc-800,
+:root.dark .text-zinc-900,
+:root.dark .text-zinc-950,
+:root.dark .text-\[\#0A0A0A\],
+:root.dark .text-\[\#0F172A\] {
+  color: var(--foreground);
+}
+
+:root.dark .text-zinc-400,
+:root.dark .text-zinc-500,
+:root.dark .text-zinc-600,
+:root.dark .text-\[\#6B7280\],
+:root.dark .text-\[\#64748B\],
+:root.dark .text-\[\#9CA3AF\] {
+  color: var(--muted-foreground);
+}
+
+:root.dark .border-zinc-100,
+:root.dark .border-zinc-200,
+:root.dark .border-zinc-300,
+:root.dark .border-zinc-950,
+:root.dark .border-\[\#E5E5E5\],
+:root.dark .border-\[\#E5E7EB\],
+:root.dark .border-green-200 {
+  border-color: var(--border);
+}
+
+:root.dark .text-red-600,
+:root.dark .text-red-700,
+:root.dark .text-red-800 {
+  color: color-mix(in oklab, #dc2626 65%, white);
+}
+
+:root.dark .text-green-600,
+:root.dark .text-green-700,
+:root.dark .text-emerald-700 {
+  color: var(--success);
+}
+
+:root.dark .hover\:bg-white\/70:hover {
+  background-color: color-mix(in oklab, var(--card) 70%, transparent);
+}
+
+/* A logo é escura; no fundo escuro ela precisa ficar branca. */
+:root.dark img[src*='logo-cais'] {
+  filter: brightness(0) invert(1);
+}
+
+/*
+ * Alto contraste (protótipo do Figma): fundo preto, texto branco, títulos e botões principais em amarelo,
+ * bordas brancas, links sublinhados e logo em branco. Ativado por `data-contrast="high"` no <html>
+ * (ver lib/accessibilityPreferences). Os tokens cobrem os componentes shadcn; as regras de classe abaixo
+ * cobrem as cores escritas direto nas classes dos componentes do FAROL.
+ */
+:root[data-contrast='high'] {
+  --hc-yellow: #ffff00;
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  --muted: #000000;
+  --muted-foreground: #ffffff;
+  --secondary: #000000;
+  --secondary-foreground: #ffffff;
+  --border: #ffffff;
+  --input: #ffffff;
+  --ring: #ffff00;
+  --primary: #ffff00;
+  --primary-foreground: #000000;
+  --accent: #ffff00;
+  --accent-foreground: #000000;
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-border: #ffffff;
+  --sidebar-primary: #ffff00;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #ffff00;
+  --sidebar-accent-foreground: #000000;
+  --success: #ffffff;
+  --warning: #ffffff;
+  --info: #ffffff;
+  --destructive: #ffffff;
+  color-scheme: dark;
+}
+
+/* Texto: tudo branco. */
+:root[data-contrast='high'] .text-zinc-400,
+:root[data-contrast='high'] .text-zinc-500,
+:root[data-contrast='high'] .text-zinc-600,
+:root[data-contrast='high'] .text-zinc-700,
+:root[data-contrast='high'] .text-zinc-900,
+:root[data-contrast='high'] .text-zinc-950,
+:root[data-contrast='high'] .text-\[\#0A0A0A\],
+:root[data-contrast='high'] .text-\[\#0F172A\],
+:root[data-contrast='high'] .text-\[\#6B7280\],
+:root[data-contrast='high'] .text-\[\#64748B\],
+:root[data-contrast='high'] .text-\[\#9CA3AF\] {
+  color: #ffffff;
+}
+
+/* Azul de marca vira amarelo (títulos, texto de botão de contorno). */
+:root[data-contrast='high'] .text-\[\#0089e2\],
+:root[data-contrast='high'] .text-\[\#0089E2\],
+:root[data-contrast='high'] .text-\[\#0077c5\],
+:root[data-contrast='high'] .text-\[\#0078C8\],
+:root[data-contrast='high'] .border-\[\#0089e2\],
+:root[data-contrast='high'] .border-\[\#0089E2\] {
+  color: var(--hc-yellow);
+  border-color: var(--hc-yellow);
+}
+
+/* Fundos: tudo preto, exceto o que era azul de marca (botão cheio), que fica amarelo com texto preto. */
+:root[data-contrast='high'] .bg-white,
+:root[data-contrast='high'] .bg-zinc-50,
+:root[data-contrast='high'] .bg-zinc-100,
+:root[data-contrast='high'] .bg-blue-50,
+:root[data-contrast='high'] .bg-\[\#e3e6eb\],
+:root[data-contrast='high'] .bg-\[\#eef1f7\],
+:root[data-contrast='high'] .bg-\[\#e8f5ff\],
+:root[data-contrast='high'] .bg-\[\#f9fafb\],
+:root[data-contrast='high'] .bg-\[\#fbfcfd\],
+:root[data-contrast='high'] .bg-\[\#F3F4F6\],
+:root[data-contrast='high'] .bg-\[\#E5E7EB\] {
+  background-color: #000000;
+}
+
+:root[data-contrast='high'] .bg-\[\#0089e2\],
+:root[data-contrast='high'] .bg-\[\#0089E2\],
+:root[data-contrast='high'] .bg-\[\#0077c5\],
+:root[data-contrast='high'] .bg-\[\#007bcf\],
+:root[data-contrast='high'] .bg-\[\#006bb5\] {
+  background-color: var(--hc-yellow);
+  color: #000000;
+}
+
+/* Cabeçalho de tabela: era azul com texto branco; fica preto com texto e linha amarelos. */
+:root[data-contrast='high'] .bg-\[\#0794dc\] {
+  background-color: #000000;
+  color: var(--hc-yellow);
+  border-bottom: 2px solid var(--hc-yellow);
+}
+
+/* Bordas: tudo branco. */
+:root[data-contrast='high'] .border-zinc-100,
+:root[data-contrast='high'] .border-zinc-200,
+:root[data-contrast='high'] .border-zinc-300,
+:root[data-contrast='high'] .border-zinc-950,
+:root[data-contrast='high'] .border-\[\#E5E5E5\],
+:root[data-contrast='high'] .border-\[\#E5E7EB\] {
+  border-color: #ffffff;
+}
+
+/* Selos de status: contorno branco, sem cor; o texto diz o estado. */
+:root[data-contrast='high'] span.rounded-full.border,
+:root[data-contrast='high'] div.rounded-full.border {
+  background-color: #000000;
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+/* Links e itens do menu: sublinhados. Botões em forma de link (classe bg-*) mantêm o próprio visual. */
+:root[data-contrast='high'] a:not([class*='bg-']) {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+:root[data-contrast='high'] aside a,
+:root[data-contrast='high'] aside button:not([class*='border-']) {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* A logo é escura; no fundo preto ela precisa ficar branca. */
+:root[data-contrast='high'] img[src*='logo-cais'] {
+  filter: brightness(0) invert(1);
+}
+
+/* Cartões de página ganham contorno branco, como no Figma. */
+:root[data-contrast='high'] .bg-white.shadow-sm:not(button, a) {
+  border: 1px solid #ffffff;
+  box-shadow: none;
+}
+
+/* Ação de saída (vermelha no tema normal) usa o mesmo amarelo dos outros botões de contorno. */
+:root[data-contrast='high'] .text-red-700,
+:root[data-contrast='high'] .border-red-600 {
+  color: var(--hc-yellow);
+  border-color: var(--hc-yellow);
+}
+
+:root[data-contrast='high'] :focus-visible {
+  outline: 3px solid var(--hc-yellow);
+  outline-offset: 2px;
+}

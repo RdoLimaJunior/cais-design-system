@@ -1,0 +1,102 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Sistemas/CAIS PMO/Migração/Guia para o desenvolvedor" tags={['!autodocs']} />
+
+# Guia para o desenvolvedor: migrar o front do PMO
+
+Este guia diz **como receber o Storybook**, **o que travar antes de começar** e **em que ordem migrar as telas**.
+O detalhe de cada troca está em *De-para de componentes e tokens*; os ícones, em *Mapa de ícones*.
+
+## 1. Como receber e rodar o Storybook
+
+Pasta: `repo/storybook` do projeto SCSP (o design system e o Storybook vivem juntos).
+
+| Para | Comando |
+| --- | --- |
+| Instalar | `pnpm install` |
+| Abrir o Storybook (porta 6006) | `pnpm storybook` |
+| Gerar a versão estática para hospedar ou enviar | `pnpm build-storybook` (sai em `storybook-static/`) |
+| Conferir os tipos | `pnpm typecheck` |
+| Rodar os testes das histórias | `pnpm test` |
+
+A pasta `storybook-static/` é um site pronto: qualquer servidor de arquivos estáticos a serve, e dá para compactá-la e enviar.
+
+**Como navegar:** *Sistemas / CAIS PMO* tem *Telas* (o PMO já migrado), *Componentes* (valores, teto, selos) e *Migração* (este material).
+Em *Componentes*, as pastas Feedback, Formulários, Dados e Navegação trazem os componentes novos.
+Use a barra superior para testar cada tela em **Mobile, Tablet, Desktop pequeno e Telas grandes**, com **fonte a 130%** e **alto contraste**.
+
+## 2. Decisões já tomadas
+
+As seis decisões que travavam a migração foram resolvidas seguindo a regra de que **o CAIS master manda e o PMO se adapta**.
+O quadro completo está em *De-para de componentes e tokens*. Em resumo:
+
+| # | Decisão |
+| --- | --- |
+| D1 | `--primary` agora é o azul de marca `#0089E2` do master |
+| D2 | Título de página é o `PageTitle` do master; `.pagina-*` saem |
+| D3 | O tema escuro foi para o master (interruptor no menu, na seção Acessibilidade); o PMO o mantém |
+| D4 | Grupos do menu viram itens com páginas filhas (abrem e fecham); "+ Novo" vira botão no cabeçalho da página |
+| D5 | Menu vira gaveta abaixo de 768 px, por cima da página (não a empurra) |
+| D6 | A biblioteca usa imports relativos; componentes novos entram por `pnpm add-ui <nome>` (usa o `shadcn add` e corrige os imports) |
+
+O D1 e o D3 foram confirmados pelo produto. Falta só a validação da design para o `--primary` (D1).
+
+## 3. Como ligar o design system ao PMO
+
+1. **Dependência:** `@cais/design-system` apontando para a pasta do Storybook (`link:` ou workspace).
+2. **Next.js:** incluir `transpilePackages: ['@cais/design-system']` no `next.config.ts` (a biblioteca entrega TypeScript).
+3. **CSS:** no `globals.css` do PMO, importar os tokens do design system e liberar o Tailwind para ler as classes dele:
+
+```css
+@import 'tailwindcss';
+@import '@cais/design-system/globals.css';
+@source '../../../storybook/src';
+```
+
+4. **Tokens:** remover do `globals.css` do PMO o bloco `:root`/`.dark` e o `@theme inline` (agora vêm do design system).
+5. **Tooltip:** colocar um único `TooltipProvider` na raiz da aplicação.
+6. **Convivência:** durante a transição os componentes antigos (`@/components/ui/*`) e os novos podem coexistir. Troque tela por tela.
+
+## 4. Ordem recomendada
+
+| Fase | O que fazer | Como saber que acabou |
+| --- | --- | --- |
+| 0 | Confirmar com a design o D1 e o D3 | Confirmação registrada |
+| 1 | Ligar o pacote, tokens e CSS (seção 3) | O PMO sobe igual ao de hoje |
+| 2 | Trocar ícones (Lucide → Tabler) com o Mapa de ícones | Nenhum import de `react-icons/lu` |
+| 3 | Trocar os primitivos (`Button`, `Card`, `Badge`, `Table`...) por `@cais/design-system` | Nenhum import de `@/components/ui/*` |
+| 4 | Trocar a casca (menu lateral e layout) | Menu do design system funcionando em todas as faixas |
+| 5 | Migrar as telas, na ordem da tabela abaixo | Cada tela igual à do Storybook |
+| 6 | Remover `components/ui`, `components/Sidebar` e a página `design-system` (o Storybook a substitui) | Código antigo apagado |
+
+## 5. As telas
+
+Todas as telas do PMO estão migradas no Storybook, em *Sistemas / CAIS PMO / Telas*, cada uma com variações de perfil,
+estado e tamanho de tela. "Linhas" é o tamanho do arquivo no PMO atual e dá uma ideia do esforço da migração do código.
+
+| Ordem | Rota | Linhas | Storybook (Telas /) |
+| --- | --- | --- | --- |
+| 1 | `/login`, `/recuperar-senha`, `/trocar-senha-obrigatoria` | 130, 59, 155 | Autenticação |
+| 2 | `/app/dashboard` | 610 | Dashboard |
+| 3 | `/app/projetos` | 577 | Projetos: lista em cards, em tabela, Simulação, Arquivados, Leitor, vazia, celular |
+| 4 | `/app/projetos/novo` | 240 | Projetos: Novo projeto (vazio e com Plano salvo) |
+| 5 | `/app/projetos/[id]` | 428 + 7.439 nas abas | Projetos: Detalhe, uma história por aba, em planejamento, arquivado, Leitor, celular |
+| 6 | `/app/colaboradores`, `/[id]`, `novo`, `[id]/editar` | 670, 314, —, 21 | Pessoas e configurações: lista, janela de cadastro, detalhe, Leitor |
+| 7 | `/app/configuracoes`, `/institutos/[id]` | 227, 257 | Pessoas e configurações: cinco abas e o instituto |
+| 8 | `/app/simulador-rpa` | 152 | Planejamento e ferramentas |
+| 9 | `/app/config` | 105 | Planejamento e ferramentas: Meu perfil |
+| — | `/app/orcamento`, `/orcamento/timeline`, `/folha-rh`, `/rh`, `/aportes` | 291, 217, 96, 80, 108 | Planejamento e ferramentas. **Fora do menu hoje** no PMO (ocultadas); decidir se migram |
+| — | `/app/projetos/[id]/folha-rh`, `/[id]/rh/espelho` | 253, 21 | Dentro das abas Folha RH e Espelho RH do detalhe do projeto |
+| — | `/app/auditoria`, `/app/janus` | 43, 251 | **Não migradas:** atrás de feature flag desligada no PMO |
+| — | `/app/design-system` | 590 | Substituída por este Storybook; remover |
+
+**Dados do Storybook:** todos fictícios. O cálculo do Simulador RPA é de exemplo (o oficial é do servidor), e o CPF aparece mascarado.
+
+## 6. Regras para não regredir
+
+- **Valor financeiro** sempre com `CelulaMoeda` (tabela) e `InputMoeda` (campo). Nunca formatar à mão.
+- **Soma de portfólio** só com projetos em execução e não arquivados. O PMO tem `filtrarProjetosAtivos()` em `lib/projetos.ts`; não reimplemente.
+- **Cor de estado** (`success`, `warning`, `destructive`, `info`) só para estado; categoria usa `teal`.
+- **Ícone sozinho** em botão precisa de `aria-label`.
+- **Nenhuma cor escrita direto na classe** (hex ou paleta do Tailwind): o PMO hoje não tem nenhuma, e o alto contraste depende disso.
+- **Teste cada tela** em Mobile, Tablet, Desktop pequeno e Telas grandes, com fonte a 130% e alto contraste.

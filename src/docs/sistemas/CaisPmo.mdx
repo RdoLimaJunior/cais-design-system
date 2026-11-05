@@ -1,0 +1,42 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Sistemas/CAIS PMO/Visão geral" tags={['!autodocs']} />
+
+# CAIS PMO
+
+> Governança financeira de projetos de P&D (Lei 8.248/91): planejado contra executado, colaboradores e folha de RH.
+
+O CAIS PMO substitui a planilha de controle de projetos. Esta seção do Storybook mostra o PMO **já na versão nova**,
+montado só com componentes do design system, e guia o time que vai migrar o front.
+
+## Por onde começar
+
+| Você quer | Abra |
+| --- | --- |
+| Migrar o front do PMO | **Migração / Guia para o desenvolvedor** |
+| Saber o que trocar por quê | **Migração / De-para de componentes e tokens** |
+| Trocar os ícones | **Migração / Mapa de ícones** |
+| Ver as telas já migradas | **Telas** |
+| Usar os componentes financeiros | **Componentes** |
+
+## Perfis e o que cada um vê
+
+O servidor decide o que cada perfil pode fazer (RBAC). A interface só esconde o que o perfil não precisa ver.
+
+| Perfil | Menu | Valores |
+| --- | --- | --- |
+| Administrador | Todos os itens, inclusive Configurações | Todos |
+| Gestor | Dashboard, Projetos, Colaboradores, Simulador RPA | Todos |
+| Analista | Dashboard, Projetos, Colaboradores, Simulador RPA | Todos |
+| Leitor | Dashboard e Projetos | **Sem salário base nem encargos** |
+
+## Regras que a interface precisa expressar
+
+| Regra | Onde aparece |
+| --- | --- |
+| **Status do projeto tem só dois valores:** Planejamento e Execução. "Arquivado" é um atributo à parte, e um projeto pode estar em execução e arquivado ao mesmo tempo | Selo do projeto (`StatusBadge`) |
+| **Somas do portfólio** só contam projetos em execução e não arquivados | Dashboard |
+| **Teto de 20% de custos incorridos (RN-EX03):** verde até 15%, âmbar até 20%, vermelho acima. O bloqueio é no servidor | Indicador de teto (`TetoIncorridos`) |
+| **Saldo negativo por rubrica (RN-EX01)** é bloqueado no servidor | Alertas e células de valor em vermelho |
+| **Valores em reais** com 2 casas, vírgula decimal e ponto de milhar; zero aparece como "—" | `CelulaMoeda`, `InputMoeda` |
+| **Colaborador "Vaga em aberto"** é uma posição planejada, não uma pessoa | Lista de colaboradores |

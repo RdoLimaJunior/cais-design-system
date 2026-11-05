@@ -1,0 +1,110 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Ecossistema CAIS/Como criar um novo sistema" tags={['!autodocs']} />
+
+# Como criar um novo sistema
+
+Roteiro para começar o **CAIS PMO**, o **CAIS SCSP** ou qualquer sistema novo usando esta biblioteca. Tudo abaixo
+já foi feito no `repo/front` e está funcionando; use-o como exemplo vivo.
+
+## 1. O que o sistema novo herda e o que ele escreve
+
+| Herda da biblioteca | Escreve no próprio sistema |
+| --- | --- |
+| Tokens (cores, raios, fonte Inter), ícones Tabler | Rotas e navegação (itens do menu) |
+| Menu lateral, quadros de página, breadcrumb | Páginas do domínio (compras, pagamentos, orçamento) |
+| Tabela, selos, formulários, modais, toasts | Regras de negócio e chamadas de API |
+| Acessibilidade (fonte, foco, cursor de mão) | Dados e textos do domínio |
+
+> **Regra de ouro:** uma tela nova só usa componentes que já existem aqui. Se faltar um, ele entra primeiro na
+> biblioteca (com story e tabela de comportamento) e só depois na tela.
+
+## 2. Ligar o sistema à biblioteca
+
+**Dependência** (`package.json` do sistema):
+
+```json
+{ "dependencies": { "@cais/design-system": "link:../storybook" } }
+```
+
+**CSS** (`src/index.css`): importa os tokens e manda o Tailwind ler as classes da biblioteca.
+
+```css
+@import '@cais/design-system/globals.css';
+@source '../../storybook/src';
+```
+
+**Vite** (`vite.config.ts`): a biblioteca importa os próprios arquivos com o alias `@`, e não pode haver dois Reacts.
+
+```ts
+import path from 'node:path'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: { '@': path.resolve(import.meta.dirname, '../storybook/src') },
+    dedupe: ['react', 'react-dom'],
+  },
+  server: { fs: { allow: [path.resolve(import.meta.dirname, '..')] } },
+})
+```
+
+**TypeScript** (`tsconfig.app.json`): `"paths": { "@/*": ["../storybook/src/*"] }`.
+
+**`index.html`**: precisa de `<div id="root">` e de `<div id="sidebar-portal-root">`. O menu lateral é renderizado
+no segundo, fora do `#root`, para que o zoom de fonte (aplicado no `#root`) não mude o tamanho dele.
+
+## 3. Montar a casca do sistema
+
+```tsx
+import { BrowserRouter } from 'react-router'
+import { Toaster } from 'sonner'
+
+createRoot(document.getElementById('root')!).render(
+  <BrowserRouter>
+    <App />
+    <Toaster />
+  </BrowserRouter>,
+)
+```
+
+Cada página usa o `AppLayout` com o **quadro** (`frame`) que combina com ela. Para um menu próprio, passe `navItems`:
+
+```tsx
+<AppLayout
+  frame="profile"
+  breadcrumb={[{ label: 'Home', href: '/home' }, { label: 'Pedidos de compra' }]}
+  activeHref="/compras"
+  userName={user.name}
+>
+  <PageCard title="Pedidos de compra">…</PageCard>
+</AppLayout>
+```
+
+O `AppSidebar` aceita `variant` (`scholar` ou `admin`) e `navItems` para substituir os itens. Os links são `<a href>`
+comuns; o sistema converte os cliques em navegação (veja `useInternalLinks.ts` no `repo/front`).
+
+## 4. Documentar o sistema no Storybook
+
+1. Crie `src/docs/sistemas/<Sistema>.mdx` com o título `Sistemas/<Sistema>/Visão geral`: descrição, perfis (e o que cada um vê), módulos e as regras que a interface expressa. Histórias de usuário e requisitos ficam na documentação do produto, não no Storybook.
+2. Cada página vira uma story em `Sistemas/<Sistema>/Páginas/<Módulo>/<Tela>`.
+3. Cada componente novo vira uma story em `Componentes/<Categoria>/<Nome>`, com a **tabela "Quando… então…"** e pelo menos uma story com `play()`.
+
+## 5. Critérios de qualidade antes de entregar
+
+- [ ] `pnpm typecheck`, `pnpm lint` e `pnpm test` limpos (biblioteca e sistema)
+- [ ] Nenhum dado pessoal real nas stories e nos mocks
+- [ ] Tudo que é clicável mostra a mãozinha e tem foco visível
+- [ ] Textos de erro e de sucesso reais; o que for provisório fica marcado no código
+- [ ] Se o sistema reproduz outro site (como o FAROL), medir com `tools/fidelity.mjs`
+
+## 6. Armadilhas já encontradas
+
+| Problema | Causa | Solução |
+| --- | --- | --- |
+| Botões sem a mãozinha | O Tailwind v4 deixa `cursor: default` | Já resolvido em `globals.css`; não remova |
+| Sidebar muda de tamanho com o zoom | Ela está dentro do `#root` | Usar o portal `#sidebar-portal-root` |
+| Erro de "dois Reacts" | O pacote linkado tem o próprio `node_modules` | `resolve.dedupe` no Vite |
+| `shadcn add` instala um pacote `cn` | O CLI confunde o alias do utilitário | Remover `cn` do `package.json`; o utilitário é `@/lib/utils` |
+| Tela do site parece "quebrada" no Storybook | Cada família de telas tem a sua casca | Escolher o `frame` certo (veja *Quadros de página*) |

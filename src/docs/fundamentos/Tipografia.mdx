@@ -1,0 +1,30 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Fundamentos/Tipografia" tags={['!autodocs']} />
+
+export const Row = ({ name, spec, style, children }) => (
+  <div style={{ display: 'flex', alignItems: 'baseline', gap: 24, padding: '12px 0', borderBottom: '1px solid #e4e4e7' }}>
+    <div style={{ width: 210, flexShrink: 0 }}>
+      <strong>{name}</strong>
+      <div style={{ fontSize: 12, color: '#71717a' }}>{spec}</div>
+    </div>
+    <div style={{ fontFamily: "'Inter Variable', system-ui, sans-serif", ...style }}>{children}</div>
+  </div>
+)
+
+# Tipografia
+
+Uma única família: **Inter** (variável, 100 a 900), carregada localmente. Não há fonte de título separada.
+
+<Row name="Título de página" spec="22px / 30px · semibold · -0,005em · azul CAIS" style={{ fontSize: 22, lineHeight: '30px', fontWeight: 600, letterSpacing: '-0.005em', color: '#0089E2' }}>Bem-vindo ao Farol do Cais</Row>
+<Row name="Título de card" spec="20px / 28px · semibold · -0,005em" style={{ fontSize: 20, lineHeight: '28px', fontWeight: 600, letterSpacing: '-0.005em' }}>Relatório de Novembro 2026</Row>
+<Row name="Corpo" spec="14px / 24px · regular" style={{ fontSize: 14, lineHeight: '24px' }}>O envio do relatório é obrigatório e afeta o pagamento da sua bolsa.</Row>
+<Row name="Subtítulo" spec="14px / 24px · regular · #6B7280" style={{ fontSize: 14, lineHeight: '24px', color: '#6B7280' }}>O gestor de pessoas e de projetos do Instituto Cais.</Row>
+<Row name="Menu e botões" spec="12px / 20px · tracking wide" style={{ fontSize: 12, lineHeight: '20px', letterSpacing: '0.025em' }}>Meu Perfil · Iniciar relatório</Row>
+<Row name="Selo de status" spec="10px / 16px · semibold" style={{ fontSize: 10, lineHeight: '16px', fontWeight: 600 }}>Não iniciado</Row>
+
+## Escala de fonte pelo usuário
+
+Os botões **Aumentar fonte** e **Diminuir fonte** do menu lateral ampliam ou reduzem o conteúdo da página
+(propriedade `zoom`) de **100% a 130%**, em passos de 10%, sem mudar a sidebar. A escolha é lembrada pelo navegador.
+Veja o comportamento em *Componentes / Menu lateral*.

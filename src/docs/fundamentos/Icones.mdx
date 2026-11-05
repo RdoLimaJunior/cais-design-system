@@ -1,0 +1,55 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import {
+  IconArrowRight,
+  IconCheck,
+  IconChevronUp,
+  IconCircleCheck,
+  IconDownload,
+  IconEye,
+  IconFileAnalytics,
+  IconHome,
+  IconMenu2,
+  IconPencil,
+  IconPlus,
+  IconPower,
+  IconSelector,
+  IconTrash,
+  IconUser,
+} from '@tabler/icons-react'
+import { AArrowDown, AArrowUp } from 'lucide-react'
+
+<Meta title="Fundamentos/Ícones" tags={['!autodocs']} />
+
+export const Item = ({ name, children }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: 120, padding: 12, border: '1px solid #e4e4e7', borderRadius: 8 }}>
+    <div style={{ width: 24, height: 24 }}>{children}</div>
+    <code style={{ fontSize: 11 }}>{name}</code>
+  </div>
+)
+
+# Ícones
+
+O FAROL usa **Tabler Icons** (`@tabler/icons-react`). Só os dois ícones de ajuste de fonte vêm do **Lucide**.
+
+**Regras de uso (copiadas do site):** tamanho `size-4` (16px) com `stroke-[1.6]` no menu e nos botões;
+`size-3.5` com `stroke-[1.8]` em indicadores pequenos; sempre herdam a cor do texto (`currentColor`).
+
+<div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+  <Item name="IconHome"><IconHome size={24} /></Item>
+  <Item name="IconUser"><IconUser size={24} /></Item>
+  <Item name="IconFileAnalytics"><IconFileAnalytics size={24} /></Item>
+  <Item name="IconMenu2"><IconMenu2 size={24} /></Item>
+  <Item name="IconPower"><IconPower size={24} /></Item>
+  <Item name="IconChevronUp"><IconChevronUp size={24} /></Item>
+  <Item name="IconCircleCheck"><IconCircleCheck size={24} /></Item>
+  <Item name="IconCheck"><IconCheck size={24} /></Item>
+  <Item name="IconArrowRight"><IconArrowRight size={24} /></Item>
+  <Item name="IconDownload"><IconDownload size={24} /></Item>
+  <Item name="IconPencil"><IconPencil size={24} /></Item>
+  <Item name="IconEye"><IconEye size={24} /></Item>
+  <Item name="IconTrash"><IconTrash size={24} /></Item>
+  <Item name="IconPlus"><IconPlus size={24} /></Item>
+  <Item name="IconSelector"><IconSelector size={24} /></Item>
+  <Item name="AArrowUp (Lucide)"><AArrowUp size={24} /></Item>
+  <Item name="AArrowDown (Lucide)"><AArrowDown size={24} /></Item>
+</div>

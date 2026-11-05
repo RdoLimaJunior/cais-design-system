@@ -1,0 +1,140 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Sistemas/CAIS PMO/Migração/Mapa de ícones" tags={['!autodocs']} />
+
+# Mapa de ícones: Lucide para Tabler
+
+O PMO atual usa Lucide (`react-icons/lu`); o design system usa Tabler (`@tabler/icons-react`).
+Os nomes abaixo foram **conferidos contra o pacote instalado**: todos existem.
+
+## Como trocar
+
+```tsx
+// Antes
+import { LuTrash2 } from 'react-icons/lu'
+<LuTrash2 size={16} />
+
+// Depois
+import { IconTrash } from '@tabler/icons-react'
+<IconTrash size={16} aria-hidden="true" />
+```
+
+- Ícone **decorativo** (ao lado de texto) leva `aria-hidden="true"`.
+- Ícone **sozinho** em botão: o botão leva `aria-label`.
+- A espessura do traço do Tabler é um pouco diferente; confira visualmente nos botões pequenos.
+- Os ícones `LuPencil` e `LuPencilLine` apontam para o mesmo `IconPencil`.
+
+## Tabela
+
+| Lucide (`react-icons/lu`) | Tabler (`@tabler/icons-react`) |
+| --- | --- |
+| `LuInfo` | `IconInfoCircle` |
+| `LuTrash2` | `IconTrash` |
+| `LuTriangleAlert` | `IconAlertTriangle` |
+| `LuPlus` | `IconPlus` |
+| `LuCircleAlert` | `IconAlertCircle` |
+| `LuPencil` | `IconPencil` |
+| `LuLock` | `IconLock` |
+| `LuChevronRight` | `IconChevronRight` |
+| `LuChevronDown` | `IconChevronDown` |
+| `LuUserPlus` | `IconUserPlus` |
+| `LuUsers` | `IconUsers` |
+| `LuFileText` | `IconFileText` |
+| `LuDownload` | `IconDownload` |
+| `LuCircleCheck` | `IconCircleCheck` |
+| `LuArchive` | `IconArchive` |
+| `LuWallet` | `IconWallet` |
+| `LuUpload` | `IconUpload` |
+| `LuEye` | `IconEye` |
+| `LuChevronLeft` | `IconChevronLeft` |
+| `LuCheck` | `IconCheck` |
+| `LuBrain` | `IconBrain` |
+| `LuFileSpreadsheet` | `IconFileSpreadsheet` |
+| `LuArrowLeft` | `IconArrowLeft` |
+| `LuSearch` | `IconSearch` |
+| `LuPercent` | `IconPercentage` |
+| `LuDollarSign` | `IconCurrencyDollar` |
+| `LuHistory` | `IconHistory` |
+| `LuClipboardCheck` | `IconClipboardCheck` |
+| `LuPaperclip` | `IconPaperclip` |
+| `LuKeyRound` | `IconKey` |
+| `LuFolderKanban` | `IconLayoutKanban` |
+| `LuMoon` | `IconMoon` |
+| `LuLockOpen` | `IconLockOpen` |
+| `LuLayers` | `IconStack2` |
+| `LuFolderPlus` | `IconFolderPlus` |
+| `LuUserRound` | `IconUser` |
+| `LuSunrise` | `IconSunrise` |
+| `LuShieldCheck` | `IconShieldCheck` |
+| `LuSave` | `IconDeviceFloppy` |
+| `LuLayoutDashboard` | `IconLayoutDashboard` |
+| `LuGift` | `IconGift` |
+| `LuEyeOff` | `IconEyeOff` |
+| `LuCoffee` | `IconCoffee` |
+| `LuCircleHelp` | `IconHelpCircle` |
+| `LuChartColumn` | `IconChartBar` |
+| `LuCalendarCheck` | `IconCalendarCheck` |
+| `LuCalendar` | `IconCalendar` |
+| `LuCalculator` | `IconCalculator` |
+| `LuArrowUpDown` | `IconArrowsSort` |
+| `LuArrowUp` | `IconArrowUp` |
+| `LuArrowRight` | `IconArrowRight` |
+| `LuArrowDown` | `IconArrowDown` |
+| `LuActivity` | `IconActivity` |
+| `LuUserMinus` | `IconUserMinus` |
+| `LuStar` | `IconStar` |
+| `LuBell` | `IconBell` |
+| `LuAArrowUp` | `IconTextIncrease` |
+| `LuZoomOut` | `IconZoomOut` |
+| `LuZoomIn` | `IconZoomIn` |
+| `LuUserCog` | `IconUserCog` |
+| `LuUndo2` | `IconArrowBackUp` |
+| `LuTriangle` | `IconTriangle` |
+| `LuTrendingUp` | `IconTrendingUp` |
+| `LuTable` | `IconTable` |
+| `LuSunset` | `IconSunset` |
+| `LuSun` | `IconSun` |
+| `LuSettings2` | `IconAdjustmentsHorizontal` |
+| `LuSettings` | `IconSettings` |
+| `LuSend` | `IconSend` |
+| `LuScale` | `IconScale` |
+| `LuRotateCcw` | `IconRotateClockwise2` |
+| `LuRefreshCw` | `IconRefresh` |
+| `LuReceipt` | `IconReceipt` |
+| `LuRadar` | `IconRadar` |
+| `LuPrinter` | `IconPrinter` |
+| `LuPower` | `IconPower` |
+| `LuPencilLine` | `IconPencil` |
+| `LuPanelLeftOpen` | `IconLayoutSidebarLeftExpand` |
+| `LuPanelLeftClose` | `IconLayoutSidebarLeftCollapse` |
+| `LuPalette` | `IconPalette` |
+| `LuMoonStar` | `IconMoonStars` |
+| `LuMinus` | `IconMinus` |
+| `LuMail` | `IconMail` |
+| `LuLoaderCircle` | `IconLoader2` |
+| `LuList` | `IconList` |
+| `LuLightbulb` | `IconBulb` |
+| `LuLayoutGrid` | `IconLayoutGrid` |
+| `LuLandmark` | `IconBuildingBank` |
+| `LuImage` | `IconPhoto` |
+| `LuHeartPulse` | `IconHeartbeat` |
+| `LuFlame` | `IconFlame` |
+| `LuFilePlus` | `IconFilePlus` |
+| `LuExternalLink` | `IconExternalLink` |
+| `LuEllipsisVertical` | `IconDotsVertical` |
+| `LuColumns3` | `IconColumns3` |
+| `LuCircleX` | `IconCircleX` |
+| `LuCirclePlay` | `IconPlayerPlay` |
+| `LuCircleArrowUp` | `IconCircleArrowUp` |
+| `LuChevronUp` | `IconChevronUp` |
+| `LuChevronsRight` | `IconChevronsRight` |
+| `LuChevronsLeft` | `IconChevronsLeft` |
+| `LuCheckCheck` | `IconChecks` |
+| `LuCar` | `IconCar` |
+| `LuCalendarRange` | `IconCalendarStats` |
+| `LuBuilding2` | `IconBuilding` |
+| `LuBanknote` | `IconCash` |
+| `LuArrowLeftRight` | `IconArrowsExchange` |
+| `LuArchiveRestore` | `IconArchiveOff` |
+| `LuAArrowDown` | `IconTextDecrease` |
+| `LuHandCoins` | `IconCoins` |

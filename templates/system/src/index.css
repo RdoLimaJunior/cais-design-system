@@ -1,0 +1,4 @@
+@import '@cais/design-system/globals.css';
+
+/* Faz o Tailwind gerar as classes usadas pelos componentes do design system. */
+@source '__DS_PATH_FROM_SRC__/src';

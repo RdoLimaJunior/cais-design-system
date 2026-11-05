@@ -1,0 +1,57 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Fundamentos/Espaçamento e layout" tags={['!autodocs']} />
+
+# Espaçamento e layout
+
+Os valores abaixo foram medidos no site. O FAROL usa a **escala padrão do Tailwind** (4px por unidade), sem tokens
+de espaçamento próprios.
+
+## Raios, sombras e bordas
+
+| Uso | Valor |
+| --- | --- |
+| Raio base do tema (`--radius`) | `0.45rem` (7,2px) |
+| Cards de página | `rounded` (4px) |
+| Campos de texto grandes | `rounded-lg` (7,2px: no tema, `lg` = `--radius`) |
+| Campos compactos e botões | `rounded` (4px) ou `rounded-md` (5,2px: `--radius` menos 2px) |
+| Selos | `rounded-full` |
+| Sombra dos cards | `shadow-sm` |
+| Borda de tabelas e cards internos | `zinc-200` (`#e4e4e7`) |
+
+## Ritmo dentro dos cards
+
+| Elemento | Medida |
+| --- | --- |
+| Cabeçalho de card | `px-5 py-5` (20px); no Editar perfil, `py-6` |
+| Corpo | `px-5 py-4` |
+| Rodapé de ações | `px-5 py-4`, com borda superior |
+| Colunas de formulário | `gap-x-12` (48px) e `gap-y-5` (20px), largura máxima de 820px |
+| Linha de tabela | 44px de altura; cabeçalho de 40px |
+
+## Menu lateral
+
+| Estado | Largura | Padding horizontal |
+| --- | --- | --- |
+| Expandido | 250px | 16px |
+| Recolhido | 56px | 12px |
+
+O conteúdo da página usa a variável `--sidebar-width` para acompanhar a largura do menu.
+
+## Quadros de página
+
+Cada família de telas tem a sua casca. Veja o detalhe e os exemplos em **Componentes / Layout / Quadros de página**.
+
+| `frame` | Área de conteúdo | Fundo |
+| --- | --- | --- |
+| `home` | `px-6 pt-8 pr-8 pb-16` | `#e3e6eb` |
+| `profile` | `px-6 pt-8 pr-8 pb-2` | `#e3e6eb` |
+| `profile-edit` | `px-6 pt-4 pr-8 pb-8` | `#e3e6eb` |
+| `document` | `px-6 pt-8 pr-8` | `#e3e6eb` |
+| `reports-list` | `p-8` | `#e3e6eb` |
+| `report-detail` | `p-6` | `#E5E7EB` |
+
+## Telas estreitas
+
+O site usa os pontos de corte do Tailwind (`md:` para duas colunas nos formulários, `sm:` nos modais). O
+comportamento em tablet e celular **ainda não foi medido** contra o site.

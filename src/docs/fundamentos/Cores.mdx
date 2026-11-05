@@ -1,0 +1,55 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Fundamentos/Cores" tags={['!autodocs']} />
+
+export const Swatch = ({ name, value, usage }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid #e4e4e7' }}>
+    <div style={{ width: 44, height: 44, borderRadius: 8, background: value, border: '1px solid #e4e4e7', flexShrink: 0 }} />
+    <div style={{ minWidth: 190 }}>
+      <strong>{name}</strong>
+      <div style={{ fontSize: 12, color: '#71717a' }}>{value}</div>
+    </div>
+    <div style={{ fontSize: 13 }}>{usage}</div>
+  </div>
+)
+
+# Cores
+
+Valores extraídos do CSS publicado do FAROL. O azul do CAIS é a cor de marca.
+
+## Marca
+
+<Swatch name="Azul CAIS" value="#0089E2" usage="Títulos de página, links de destaque, selos e botões de contorno" />
+<Swatch name="Azul CAIS (hover)" value="#0077c5" usage="Texto de botão de contorno em hover" />
+<Swatch name="Azul CAIS (fundo hover)" value="#e8f5ff" usage="Fundo de botão de contorno em hover" />
+
+## Superfícies
+
+<Swatch name="Fundo da aplicação" value="#e3e6eb" usage="Fundo geral e da barra lateral" />
+<Swatch name="Card" value="#ffffff" usage="Painéis e cards de conteúdo" />
+<Swatch name="Painel interno" value="#f9fafb" usage="Área expandida de um alerta" />
+<Swatch name="Borda" value="#e4e4e7" usage="Divisórias e contornos de cards (zinc-200)" />
+
+## Texto
+
+<Swatch name="Texto principal" value="#09090b" usage="Corpo e títulos de card (zinc-950)" />
+<Swatch name="Texto secundário" value="#6B7280" usage="Subtítulos e descrições" />
+<Swatch name="Texto auxiliar" value="#71717a" usage="Rótulos de apoio (zinc-500)" />
+
+## Estado
+
+<Swatch name="Perigo" value="#dc2626" usage="Botão de confirmação destrutiva (red-600)" />
+<Swatch name="Perigo (texto)" value="#b91c1c" usage="Texto e contorno do botão Sair do Sistema (red-700)" />
+<Swatch name="Sucesso" value="#16a34a" usage="Ícone de item concluído, selos e alertas de sucesso (green-600). Token `--success`" />
+<Swatch name="Aviso" value="#d97706" usage="Atenção: perto do limite ou precisa de ajuste (amber-600, já usado no FAROL). Token `--warning`" />
+<Swatch name="Informação" value="#0089E2" usage="O próprio azul da marca. Token `--info`" />
+
+O fundo suave de um estado é a própria cor com 10% de opacidade (`bg-success/10`). Os sistemas (PMO, SCSP) usam estas cores; se um sistema precisar de uma cor nova, ela é derivada de uma destas, nunca um valor solto.
+
+## Tokens do tema (shadcn)
+
+O tema também define os tokens do shadcn/ui (`--primary`, `--muted`, `--border`, `--ring` e outros) em
+`src/styles/globals.css`, com versão para modo escuro (`.dark`). Eles foram copiados do CSS do FAROL e
+não devem ser alterados sem validar com a design.
+
+**Exceção feita para o PMO:** o `--primary` era um azul-petróleo que nenhuma tela usava e passou a ser o azul da marca, `#0089E2`. Confirme com a design.

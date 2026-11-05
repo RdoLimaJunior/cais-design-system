@@ -1,0 +1,162 @@
+<style>
+  /* Estilo das páginas de documentação (MDX e autodocs). Só aparência: o conteúdo mora nos arquivos .mdx. */
+  .sbdocs-content {
+    max-width: 960px;
+  }
+
+  .sbdocs-wrapper {
+    padding-block: 2.5rem;
+  }
+
+  .sbdocs h1:not(.docs-story *),
+  .sbdocs h2:not(.docs-story *),
+  .sbdocs h3:not(.docs-story *) {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #0f172a;
+  }
+
+  .sbdocs h1:not(.docs-story *) {
+    font-size: 2rem;
+    color: #0089e2;
+    margin-bottom: 0.5rem;
+  }
+
+  .sbdocs h2:not(.docs-story *) {
+    font-size: 1.375rem;
+    margin-top: 2.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e4e4e7;
+  }
+
+  .sbdocs h3:not(.docs-story *) {
+    font-size: 1.0625rem;
+    margin-top: 1.75rem;
+  }
+
+  .sbdocs p:not(.docs-story *),
+  .sbdocs li:not(.docs-story *) {
+    line-height: 1.7;
+  }
+
+  .sbdocs ol:not(.docs-story *) {
+    list-style: decimal;
+    padding-left: 1.5rem;
+  }
+
+  .sbdocs ul:not(.docs-story *) {
+    list-style: disc;
+    padding-left: 1.5rem;
+  }
+
+  .sbdocs li + li:not(.docs-story *) {
+    margin-top: 0.35rem;
+  }
+
+  .sbdocs table:not(.docs-story *) {
+    width: 100%;
+    margin-block: 1.25rem;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .sbdocs table th:not(.docs-story *) {
+    text-align: left;
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  .sbdocs table th:not(.docs-story *),
+  .sbdocs table td:not(.docs-story *) {
+    padding: 0.625rem 0.875rem;
+    vertical-align: top;
+  }
+
+  .sbdocs blockquote:not(.docs-story *) {
+    margin-inline: 0;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #0089e2;
+    background: #f0f9ff;
+    border-radius: 0 6px 6px 0;
+    color: #0f172a;
+  }
+
+  .sbdocs pre:not(.docs-story *) {
+    border-radius: 8px;
+  }
+
+  .sbdocs a:not(.docs-story *) {
+    color: #0089e2;
+  }
+
+  /* Tabelas largas rolam dentro da página em vez de estourar a tela do celular. */
+  @media (max-width: 767px) {.sbdocs-content {
+      overflow-x: auto;
+    }
+
+  .sbdocs h1:not(.docs-story *) {
+      font-size: 1.625rem;
+    }
+  }/* Alto contraste (mesma paleta do Figma): fundo preto,
+  texto branco,
+  títulos amarelos. */
+  :root[data-contrast='high'] .sbdocs-wrapper,
+  :root[data-contrast='high'] .sbdocs-content,
+  :root[data-contrast='high'] .sbdocs {
+    background: #000000;
+    color: #ffffff;
+  }
+
+  :root[data-contrast='high'] .sbdocs h1:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs h2:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs h3:not(.docs-story *) {
+    color: #ffff00;
+    border-color: #ffffff;
+  }
+
+  :root[data-contrast='high'] .sbdocs p:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs li:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs td:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs strong:not(.docs-story *) {
+    color: #ffffff;
+  }
+
+  :root[data-contrast='high'] .sbdocs a:not(.docs-story *) {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+  :root[data-contrast='high'] .sbdocs table:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs table th:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs table td:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs table tr:not(.docs-story *) {
+    background: #000000;
+    border-color: #ffffff;
+    color: #ffffff;
+  }
+
+  :root[data-contrast='high'] .sbdocs table th:not(.docs-story *) {
+    color: #ffff00;
+    border-bottom: 2px solid #ffff00;
+  }
+
+  :root[data-contrast='high'] .sbdocs blockquote:not(.docs-story *) {
+    background: #000000;
+    border: 2px solid #ffffff;
+    border-left: 6px solid #ffff00;
+  }
+
+  :root[data-contrast='high'] .sbdocs code:not(.docs-story *) {
+    background: #000000;
+    color: #ffff00;
+    border: 1px solid #ffffff;
+  }
+
+  :root[data-contrast='high'] .sbdocs pre:not(.docs-story *),
+  :root[data-contrast='high'] .sbdocs pre code:not(.docs-story *) {
+    background: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
+  }
+</style>

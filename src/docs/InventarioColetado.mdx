@@ -1,0 +1,62 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Ecossistema CAIS/Inventário do que foi coletado" tags={['!autodocs']} />
+
+# Inventário do que foi coletado
+
+Tudo que foi levantado do FAROL, de onde veio e onde está no Storybook. Serve como mapa para o próximo sistema e
+como lista do que ainda falta.
+
+## Fontes
+
+| Fonte | O que deu | Observação |
+| --- | --- | --- |
+| **Site em produção** (`farol.institutocais.org.br`) | HTML, CSS, estilos computados, ícones, fonte, favicons, manifest, fluxo de telas | Capturado com a conta de **Bolsista**; telas de RH não abrem para esse perfil |
+| **JavaScript público do site** | Lista de rotas, bibliotecas usadas (React Router, Sonner, react-hook-form, zod, Radix, Tabler) | Só estrutura; nenhum dado |
+| **Figma do Farol** | Visão de administrador do menu, componentes, protótipo de alto contraste | O arquivo é do time de design; vale como referência, **o site vence** em caso de conflito |
+| **Medições no navegador** | Escala de fonte (100% a 130%), chaves do `localStorage`, regras de cursor | Feitas com o Playwright |
+
+## Componentes (todos com story e tabela de comportamento)
+
+| Categoria | Componentes |
+| --- | --- |
+| **Navegação** | Menu lateral (Bolsista e Administrador, expandido e recolhido), Breadcrumb (7 variações), Abas segmentadas, Paginação |
+| **Formulários** | Botão, Campo de texto (2 tamanhos), Campo de dígitos, Campo de senha e login, Upload de foto, Cartão de edição |
+| **Dados** | Tabela, Selos de status, Card de relatório, Painel de alerta recolhível, Campos de leitura, Ação de linha |
+| **Layout** | Quadros de página (6), Card de página, Layout de autenticação |
+| **Feedback** | Modal "Sair do sistema" |
+
+## Telas
+
+| Módulo | Tela | Estado no Storybook | Fidelidade medida contra o site |
+| --- | --- | --- | --- |
+| Autenticação | Login e recuperar senha | ✅ | 100% |
+| Autenticação | Definir nova senha | ✅ | 100% |
+| Autenticação | Convite inválido e expirado | ✅ | 100% |
+| Início | Home | ✅ | 100% |
+| Perfil | Ver perfil (8 abas) | ✅ | 100% |
+| Perfil | Editar perfil, endereço, dados bancários, alterar senha | ✅ | 100% |
+| Relatórios | Meus relatórios | ✅ | 100% |
+| Relatórios | Relatório mensal (não iniciado e concluído) | ✅ | 100% |
+| Relatórios | Relatório mensal em revisão | ⚠️ desenho inferido, não visto no site | — |
+| Termos | Confidencialidade, autodeclaração, parentesco, outorga | ✅ | 100% |
+| Documentos | Enviar documento e "documento não encontrado" | ✅ | 100% |
+| RH | Colaboradores, projetos, relatórios, termos, documentos, assinantes, histórico | ❌ sem acesso (só no Figma) | — |
+
+> **Nota sobre o site:** nas telas de termo o site desenha a sidebar **duas vezes, sobrepostas** (um defeito dele).
+> A biblioteca não replica a duplicação; o medidor ignora cópias exatamente sobrepostas.
+
+## O que ainda não foi possível capturar
+
+- **Textos de erro e de sucesso**: mensagens de validação dos formulários e dos toasts (exigem enviar formulário de verdade). Estão marcados como *provisórios* no código.
+- **Outros estados do relatório mensal**: devolvido para correção, aguardando revisão, assinatura pendente.
+- **Telas de RH**: só a estrutura (rotas) é conhecida.
+- **Telas estreitas** (tablet e celular), **hover** e **foco**: ainda não medidos.
+
+## Ferramentas
+
+| Ferramenta | Para quê |
+| --- | --- |
+| `repo/front/tools/fidelity.mjs` | Compara o front com o site, elemento por elemento (texto, posição, tamanho, estilo, cursor) |
+| `repo/front/FIDELIDADE.md` | Checklist com o critério de "pronto" de cada tela |
+| Stories com `play()` | Cada comportamento documentado roda como teste |

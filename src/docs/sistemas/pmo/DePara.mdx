@@ -1,0 +1,121 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Sistemas/CAIS PMO/Migração/De-para de componentes e tokens" tags={['!autodocs']} />
+
+# De-para: do front atual do PMO para o design system
+
+## A regra
+
+**O CAIS master manda; o PMO se adapta.** O PMO não importa o seu visual para dentro do design system: ele passa a usar
+os componentes, as cores e a tipografia do master. Três consequências:
+
+- **Cores:** vêm do CAIS master. Se o PMO precisar de uma cor que o master não tem, ela pode existir no PMO, mas derivada de uma cor do master.
+- **Fonte:** uma só, a **Inter** do master. Nenhuma fonte nova.
+- **Componente que não existe:** é criado no padrão do design system (shadcn new-york, `data-slot`, API em inglês), nunca copiado como está.
+
+O PMO atual já é Next.js com Tailwind v4 e shadcn e **não usa cor solta** (nenhuma classe com hex ou paleta do Tailwind),
+então a migração visual é, em essência, trocar tokens, imports e ícones.
+
+Legenda: ✅ já existia no design system · ➕ criado agora no padrão do design system · ⏳ ainda não feito.
+
+## 1. Decisões tomadas
+
+| # | Decisão | O que foi feito |
+| --- | --- | --- |
+| D1 | Cor `--primary` | O master define o azul de marca como `#0089E2` (Cores / Marca), mas o token `--primary` era um azul-petróleo herdado do FAROL que nenhuma tela usava. O `--primary` passou a ser `#0089E2`. **É a única alteração em um token existente do master; confirme com a design** |
+| D2 | Título de página | Vale o do master: `PageTitle` (22 px, azul). As classes `.pagina-*` do PMO saem |
+| D3 | Modo escuro | **O tema escuro entrou no master** (interruptor "Ativar tema escuro" no menu, seção Acessibilidade, ao lado do alto contraste). O PMO mantém o recurso |
+| D4 | Menu lateral | Vale o do master. Os grupos do PMO atual (Projetos e RH, Execução e Auditoria) viram itens com **páginas filhas, que o usuário abre e fecha** pela seta (a escolha fica salva). Não há "+ Novo" no menu: "Novo projeto" e "Novo colaborador" viram botões no cabeçalho de cada página (`actions` do `PageCard`) |
+| D5 | Menu no celular | Criado: abaixo de 768 px o menu vira gaveta que abre **por cima** da página, sem empurrá-la (botão no topo, fundo escurecido, `Esc`, botão Fechar e fecha ao tocar em um link; a página atrás não rola) |
+| D6 | Imports `@/` | A biblioteca agora usa imports relativos. Componentes novos entram sempre por `pnpm add-ui <nome>` (usa o `shadcn add` e já corrige os imports) |
+
+## 2. Cores
+
+O master tem uma paleta curta. O PMO usa nomes semânticos; veja como cada um se adapta.
+
+| PMO | Design system (master) | Observação |
+| --- | --- | --- |
+| `--primary` | `--primary` = `#0089E2` | D1 |
+| `--success` | `--success` = `#16a34a` | É o "Sucesso" do master (Cores / Estado) ➕ |
+| `--warning` | `--warning` = `#d97706` | O âmbar já usado no FAROL ➕ |
+| `--info` | `--info` = `#0089E2` | O próprio azul de marca ➕ |
+| `--destructive` | `--destructive` | O "Perigo" do master |
+| `--*-soft` (fundos suaves) | `bg-success/10`, `bg-warning/10`, `bg-info/10`, `bg-primary/10` | Não há token à parte: é a cor com 10% de opacidade |
+| `--accent`, `--accent-soft` (verde-azulado) | — | **Não existe no master.** Troque por `secondary` (neutro) ou por uma cor de estado, conforme o sentido |
+| `--muted-foreground-2` | `--muted-foreground` | O PMO usava dois cinzas de texto de apoio; o master tem um |
+| `--shadow-card` | `shadow-sm` | Sombra do `Card` do master |
+| `--muted`, `--card`, `--border`, `--input`, `--ring` | idem | Mesmos nomes |
+
+**Regra:** `success`, `warning`, `destructive` e `info` só dizem estado, nunca categoria. A cor nunca é o único sinal.
+
+## 3. Componentes e propriedades
+
+Troque `import { X } from "@/components/ui/x"` por `import { X } from "@cais/design-system"`.
+Todos os componentes abaixo seguem o padrão do design system, com API em inglês.
+
+| PMO | Design system | O que muda |
+| --- | --- | --- |
+| `Button` | `Button` ✅ | `comoFilho` → `asChild`. `carregando` não existe: use o botão desabilitado com `<Spinner />` antes do texto. Tamanhos: `default` do PMO (36 px) → `size="lg"`; `sm` do PMO (32 px) → `default`. `variant="destructive"` passa de vermelho sólido para vermelho suave |
+| `Card`, `CardHeader`... | `Card`... ✅ | O `Card` do master já tem espaçamento (`py-6`, `gap-6`). Para blocos densos use `className="gap-2 py-4"`. `CardHeader` não tem borda inferior |
+| `Badge` | `Badge` ✅ ➕ | `default` (azul suave) → `default` (azul sólido). `destructive` (vermelho suave) → `destructive` (sólido). `success`, `warning` e `info` ➕ (fundo suave). `accent` → `secondary`. O PMO renderiza `div`, o design system `span` |
+| `Alert` | `Alert` ➕ | `variant`: `default`, `info`, `success`, `warning`, `destructive`. O ícone entra como primeiro filho (`<svg>`) |
+| `Dialog` | `Dialog` ➕ | Mesmos nomes. O botão Fechar já vem no `DialogContent` (`showCloseButton`) |
+| `Tooltip` | `Tooltip` ➕ | Coloque **um** `TooltipProvider` na raiz da aplicação e remova os locais |
+| `Select` | `Select` ➕ | Mesmos nomes. Ganhou `size` |
+| `DropdownMenu` | `DropdownMenu` ➕ | `destructivo` → `variant="destructive"` no item |
+| `Switch`, `RadioGroup`, `Textarea` | idem ➕ | Mesma API. `Switch` e `RadioGroup` agora são Radix |
+| `Progress` | `Progress` ➕ | `indicatorClassName="bg-success"` → `className="*:data-[slot=progress-indicator]:bg-success"` |
+| `Skeleton`, `Separator` | idem ➕ | Mesma API |
+| `Spinner` | `Spinner` ➕ | `size="sm\|default\|lg"` → `className="size-4\|size-7\|size-10"` |
+| `PageLoader` | — | Não existe: componha `Spinner` + texto (exemplo em *Carregamento*) |
+| `Table`, `TableHeader fixo`... | `Table`... ➕ | `TableHeader fixo` → `sticky`. `containerClassName` continua; `containerStyle` e `containerRef` saem. As linhas deixam de ser zebradas |
+| `Input` | `Input` ✅ | Fundo transparente (no PMO era `bg-card`) |
+| `Label` | `Label` ✅ | |
+| `Tabs` | `Tabs` ✅ | Abas sublinhadas: `<TabsList variant="line">` |
+| `Avatar`, `Accordion` | idem ✅ | |
+| `Pagination` | `Pagination` ✅ | Props mudam: `paginaAtual` → `currentPage`, `totalPaginas` → `totalPages`, `aoMudarPagina` → `onPageChange`; o design system exige `ariaLabel`. `total` e `tamanhoPagina` não existem |
+| `AvatarPessoa` | `PersonAvatar` ➕ | Iniciais sobre o azul de marca; não há cor por pessoa |
+| `Toaster` | `Toaster` e `toast` ➕ | Vem do `shadcn add sonner`, ligado ao tema do design system |
+| `Checkbox` | `Checkbox` ➕ | Do `shadcn add checkbox` |
+| `Combobox` | — ⏳ | Um único uso no PMO; ainda não portado |
+
+### Componentes de domínio do PMO
+
+Foram criados sobre `Input`, `Table`, `Card`, `Badge` e `Progress` do design system, com nomes em inglês.
+
+| PMO | Design system | Propriedades |
+| --- | --- | --- |
+| `CelulaMoeda` | `CurrencyCell` ➕ | `valor` → `value`; `forte` → `strong`; `vermelhoSeNegativo` → `redIfNegative`; `zeroComoTraco` → `zeroAsDash` |
+| `InputMoeda` | `CurrencyInput` ➕ | `permiteNegativo` → `allowNegative`; `semSimbolo` → `hideSymbol`; `max` igual |
+| `InputPercentual` | `PercentInput` ➕ | `casasDecimais` → `decimals` |
+| `StatusBadge` | `ProjectStatusBadge` ➕ | `arquivado` → `archived`; `size` saiu |
+| `RubricaBadge` | `RubricBadge` ➕ | `rubrica` → `rubric` |
+| indicador de teto (`IncorridosTab`) | `IncurredCostsCap` ➕ | `percentual` → `percent`; `ajuda` → `help` |
+| `CurrencyDisplay` + `lib/formatting` | `formatCurrency`, `formatPercent` ➕ | |
+| `SaldoPTBadge` | — ⏳ | Depende do formato da resposta da API |
+| `AjudaTooltip` (de cada tela) | `HelpTip` ➕ | Ícone de ajuda com dica |
+| cartão de indicador (KPI) | `StatCard` ➕ | Rótulo pequeno e número grande |
+| selo de saúde | `HealthBadge` ➕ | Saudável, Atenção e Crítico |
+| `Breadcrumb` | `PageBreadcrumb` ✅ | |
+| `ProtectedComponent`, `CampoArquivo`, `ComprovantesPainel`, `TriagemEndpoints` | — | Ficam no PMO: dependem de API e de papel de usuário |
+
+## 4. Layout, navegação e acessibilidade
+
+| PMO | Design system | Observação |
+| --- | --- | --- |
+| `.pagina`, `.pagina-cabecalho`, `.pagina-titulo`, `.pagina-subtitulo` | `PageCard` (`title`, `subtitle`, `actions`) | D2 |
+| Sidebar própria (`components/Sidebar/*`) | `AppLayout` + `AppSidebar` | D4 e D5 |
+| Escala de fonte pela raiz, 87,5% a 125%, passo 6,25% | Escala por `zoom`, 100% a 130%, passo 10% | Os limites mudam |
+| `useEscalaFonte`, `useTema` | `useAccessibilityPreferences` (`theme`, `setTheme`) | D3 |
+| Link "Pular para o conteúdo" | — ⏳ | Manter no PMO até o design system ter |
+
+## 5. Ícones
+
+O master usa **Tabler** (`@tabler/icons-react`). O PMO usa Lucide (`react-icons/lu`), cerca de 110 ícones distintos.
+O mapa já conferido contra o pacote está em **Migração / Mapa de ícones**.
+
+## 6. O que não muda
+
+- Camada de dados: `@tanstack/react-query`, cliente de API, autenticação e `proxy.ts`.
+- Regras de negócio e os gatekeepers (ficam no servidor).
+- Next.js, React, Tailwind e Radix.

@@ -1,0 +1,43 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Sistemas/FAROL/Visão geral" tags={['!autodocs']} />
+
+# FAROL
+
+> O gestor de pessoas e de projetos do Instituto CAIS.
+
+O FAROL é o sistema **mestre** do ecossistema. Bolsistas e colaboradores acompanham pendências,
+mantêm o próprio cadastro, enviam relatórios mensais e assinam termos. A equipe de RH gere
+colaboradores, projetos, relatórios e termos.
+
+Endereço em produção: `farol.institutocais.org.br`
+
+## Perfis
+
+| Perfil | Menu | O que faz |
+| --- | --- | --- |
+| **Bolsista** | Home, Meu Perfil, Meus Relatórios | Acompanha pendências, atualiza o cadastro, envia o relatório mensal |
+| **RH / Administrador** | Menu de gestão (ver abaixo) | Gere colaboradores, projetos, relatórios, termos e documentos |
+
+## Módulos
+
+**Área do Bolsista**
+- Home com pendências e alertas
+- Meu Perfil: Perfil, Endereço, Dados bancários, Informações de Contrato, Documentos, Termos, Relatórios e Senha
+- Meus Relatórios e Relatório mensal
+
+**Área de RH** (estrutura extraída do código público do site)
+- Colaboradores (lista, detalhe, adicionar e editar)
+- Projetos (lista, detalhe, adicionar e editar)
+- Relatórios de bolsistas e revisão
+- Termos (incluindo termo de exceção), solicitações de assinatura e assinantes
+- Documentos e histórico de alterações
+
+## Situação das telas
+
+| Área | Situação |
+| --- | --- |
+| Home, Perfil, Relatórios (Bolsista) | Portadas do site em produção |
+| Login, Register, Reset password | Portadas do site em produção |
+| Modais | Portados conforme capturados |
+| Área de RH | Em andamento (estrutura extraída do código público) |

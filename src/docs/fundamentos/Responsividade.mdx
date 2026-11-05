@@ -1,0 +1,82 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
+import * as DashboardStories from '../../pages/pmo/PmoPages.stories'
+
+<Meta title="Fundamentos/Responsividade" tags={['!autodocs']} />
+
+# Responsividade
+
+Toda tela dos sistemas CAIS funciona em celular e em computador. O design system define
+**quatro faixas de tela**, com nomes únicos para o time inteiro usar.
+
+## As faixas
+
+| Faixa | Largura | Prefixo Tailwind | Largura de teste no Storybook |
+| --- | --- | --- | --- |
+| **Mobile** | até 767 px | sem prefixo | 375 px |
+| **Tablet** | 768 a 1023 px | `md:` | 768 px |
+| **Desktop pequeno** | 1024 a 1439 px | `lg:` | 1280 px |
+| **Telas grandes** | 1440 px ou mais | `xl:` (e `2xl:` a partir de 1920 px) | 1536 px e 1920 px |
+
+O prefixo `sm:` (640 px) continua disponível para ajustes finos em celulares grandes.
+As faixas estão definidas em `src/styles/globals.css`, no bloco `@theme`.
+
+## Como escrever uma tela
+
+Comece pelo mobile e acrescente os prefixos conforme a tela cresce.
+
+```tsx
+<div className="flex flex-col gap-3 md:flex-row lg:gap-6">
+  <Filtros className="w-full md:w-64" />
+  <Resultados className="flex-1" />
+</div>
+```
+
+## O que muda em cada faixa
+
+Esta é a regra para as telas novas. A coluna **Situação** diz o que já existe nos componentes.
+
+| Elemento | Mobile | Tablet | Desktop pequeno e telas grandes | Situação |
+| --- | --- | --- | --- | --- |
+| **Listas com muitas colunas** | Cartões, um por item | Cartões | Tabela completa | Feito no SCSP (Solicitações) |
+| **Botões principais do cabeçalho** | Empilhados, largura total | Lado a lado | Lado a lado | Feito (`PageCard` com `actions`) |
+| **Formulários** | Uma coluna | Uma ou duas colunas | Duas colunas | Depende de cada tela |
+| **Largura do conteúdo** | Toda a tela | Toda a tela | Limitada e centralizada em telas grandes | A definir |
+| **Menu lateral** | Em gaveta, aberta por um botão | Recolhido | Expandido (250 px) | **Pendente:** o menu atual não tem comportamento responsivo |
+
+## Como testar no Storybook
+
+Abra o seletor de **tamanho de tela** (ícone de monitor) na barra superior. As cinco larguras da tabela
+acima já estão cadastradas. Combine com os controles de **Fonte** e **Contraste**: uma tela só está pronta
+quando funciona nas quatro faixas com a fonte a 130%.
+
+## Checklist antes de entregar uma tela
+
+- Não existe rolagem horizontal na página, em nenhuma faixa. Tabelas largas viram cartões no mobile.
+- Os botões e links têm área de toque de pelo menos 40 px de altura no mobile.
+- O texto continua legível com a fonte a 130%.
+- Nada depende de passar o mouse (`hover`) para funcionar.
+- A tela funciona com alto contraste ligado.
+
+## A mesma tela nas cinco larguras
+
+O Dashboard do CAIS PMO em cada largura de teste. Cada quadro é uma janela com a largura real da faixa (os maiores aparecem reduzidos para caber na página), então as regras `md:`, `lg:` e `xl:` respondem como na tela de verdade.
+
+### Mobile (375 px)
+
+<Canvas of={DashboardStories.NoMobile} />
+
+### Tablet (768 px)
+
+<Canvas of={DashboardStories.NoTablet} />
+
+### Desktop pequeno (1280 px)
+
+<Canvas of={DashboardStories.NoDesktopPequeno} />
+
+### Tela grande (1536 px)
+
+<Canvas of={DashboardStories.NaTelaGrande} />
+
+### Tela extra grande (1920 px)
+
+<Canvas of={DashboardStories.NaTelaExtraGrande} />

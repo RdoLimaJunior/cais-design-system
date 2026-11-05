@@ -1,0 +1,81 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Ecossistema CAIS/Figma: o que existe e o que falta" tags={['!autodocs']} />
+
+# Figma: o que existe e o que falta
+
+Levantamento do arquivo **Farol do CAIS** no Figma, cruzado com o que já está no Storybook. A lista de telas vem
+da estrutura do arquivo (nomes e tamanhos de quadros). **Os estilos e as medidas ainda não foram lidos** para a maior
+parte delas: o acesso ao Figma pelo MCP atingiu o limite de chamadas do plano.
+
+> **Regra de precedência:** onde o site em produção e o Figma discordam, **vale o site**. O Figma vale para o que
+> ainda não existe em produção (RH, gerente, e-mails, manual, recrutamento).
+
+## Resumo
+
+| Área no Figma | Quadros | No Storybook |
+| --- | --- | --- |
+| Perfil do bolsista, Ver perfil, Envio de relatório, Autocadastro, Login e recuperar senha | ~45 | ✅ Parte feita a partir do **site** (login, perfil, edições); o restante pendente |
+| Termos (usuário e administrador), testemunha, mensagem de sucesso | ~15 | ⏳ Termos do bolsista capturados do site; administrador e testemunha pendentes |
+| **E-mails** | **15** | ❌ Nenhum |
+| **Recrutamento e Seleção** (vagas, currículos, entrevistas, proposta) | **~40** | ❌ Nenhum |
+| **Manual do Colaborador** (leitura, consulta, busca, releitura anual) | **~35** | ❌ Nenhum |
+| **Superusuário e Gestão de Projetos** | ~10 | ❌ Nenhum |
+| **Gerente: revisão de relatório** | 8 | ❌ Nenhum |
+| **Estados**: lista vazia, carregamento (skeleton), alto contraste | 3 famílias | ❌ Nenhum |
+| Componentes (toast, cards "passo a passo", badges, containers) | ~12 | ✅ Parte (badges, cards); toast e skeleton pendentes |
+
+## E-mails (15 modelos)
+
+| Código | Modelo |
+| --- | --- |
+| E1 | Nova solicitação de vaga |
+| E2 | Vaga aberta em seu nome |
+| E3 | Nova indicação em vaga aberta |
+| E4 | Currículos para validação |
+| E5 | Você foi designado para avaliar currículos |
+| E6 | Lembrete: currículos aguardando avaliação |
+| E7 | Avaliação de currículos concluída |
+| E8 | Convite para entrevista |
+| E9 | Retorno do processo seletivo (triagem) |
+| E10 | Retorno do processo seletivo (entrevista) |
+| E11 | Proposta aceita: solicite a contratação |
+| E12 | Solicitação de contratação recebida |
+| — | E-mail para testemunhas |
+| — | Leitura do Manual e Releitura anual do Manual |
+| — | **E-mail de convite** (página própria no arquivo Farol) |
+
+## Recrutamento e Seleção
+
+Três perfis, cada um com listas, detalhes e **modais**:
+
+| Perfil | Telas |
+| --- | --- |
+| **Solicitante** (gerente/coordenador) | Minhas vagas; Solicitar vaga em 4 passos (dados, perfil, remuneração CLT ou bolsista, indicação); Detalhe da vaga; Validar currículos; Solicitação de contratação. Modais: indicar candidato, designar responsável técnico, avaliar currículo |
+| **Responsável técnico** | Avaliar currículos; modal de avaliação |
+| **RH** | Vagas; detalhe da vaga em **triagem**, **entrevista** e **proposta**; Candidatos; Solicitar vaga. Modais: adicionar candidatos, enviar currículos, registrar agendamento, resultado da entrevista, feedback negativo (lote e individual), resposta da proposta |
+
+## Manual do Colaborador
+
+Leitura obrigatória com confirmação ("Manual lido com sucesso"), consulta, busca com resultados e **releitura anual**.
+Capítulos: Diretório Institucional, Day Off de Aniversário, Happy Friday, Trabalho Remoto e Híbrido, Conduta e Boas
+Práticas, Segurança da Informação, Equipamentos Institucionais, Atualização de Dados, Colaboradores CLT, Estagiários,
+Bolsistas de Pesquisa e Devoluções e Quadro-Resumo.
+
+## Outras telas só no Figma
+
+- **Superusuário**: Home, Ver todos os colaboradores (com filtros e tags), Adicionar colaboradores.
+- **Gestão de Projetos**: Projetos, Ver, Adicionar e Editar projeto.
+- **Termos do administrador**: Gerir termos, Corrigir e assinar, Termo de exceção, Upload, tornar um colaborador testemunha.
+- **Gerente**: Revisar relatório, "Estou de acordo", Sugerir correção, Correção solicitada, Assinar o relatório.
+- **Autocadastro de bolsista**: 5 etapas e a tela de conclusão (usa o campo de dígitos).
+- **Estados**: lista vazia (ícone + título + texto), carregamento (*skeleton*) e modo de **alto contraste** (o botão já existe no menu do administrador; falta o tema).
+- **Abas extras no perfil visto pelo administrador**: "Gerir Acesso".
+
+## Como destravar a leitura do Figma
+
+| Opção | O que precisa |
+| --- | --- |
+| **Esperar o limite renovar** ou **trocar o assento** para um com acesso de desenvolvimento | Ação no plano do Figma; o limite é por assento |
+| **API REST do Figma** com um *token* pessoal só de leitura | Gerar o token em *Settings → Security*; ele fica em variável de ambiente e **nunca** no repositório |
+| **Exportar** os quadros desejados (PNG ou PDF) | Prioridade: e-mail de convite, alto contraste, lista vazia, carregamento |

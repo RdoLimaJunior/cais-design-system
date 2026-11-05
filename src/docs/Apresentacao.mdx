@@ -1,0 +1,51 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Ecossistema CAIS/Apresentação" tags={['!autodocs']} />
+
+# Design System do Ecossistema CAIS
+
+Uma única biblioteca de interface para todos os sistemas do Instituto CAIS. Cada sistema nasce
+com a mesma identidade, os mesmos componentes e o mesmo comportamento de acessibilidade, e só
+acrescenta o que é específico do seu domínio.
+
+## Os sistemas
+
+| Sistema | O que é | Situação |
+| --- | --- | --- |
+| **FAROL** | Gestor de pessoas e de projetos do Instituto CAIS. É o **sistema mestre**: veio primeiro e define a base visual. | Telas de Bolsista portadas do site em produção |
+| **CAIS PMO** | Gestão financeira e de governança de projetos de P&D (PD&I). | Telas migradas para a versão nova |
+| **CAIS SCSP** | Sistema de Compras, Serviços e Pagamentos. | Em definição neste projeto |
+
+Cada sistema tem a sua seção em **Sistemas** no menu lateral, com descrição, perfis de uso,
+as regras que a interface expressa e as telas. As histórias de usuário ficam na documentação do produto, não aqui.
+
+## Como o Storybook está organizado
+
+- **Fundamentos**: cores, tipografia, espaçamento, ícones e acessibilidade. São as decisões que valem para todos os sistemas.
+- **Componentes**: cada componente tem as variações, as propriedades e uma tabela de **comportamentos**. As histórias interativas são executadas como teste.
+- **Sistemas**: as telas completas de cada sistema, montadas só com componentes da biblioteca.
+
+## Princípios
+
+1. **O FAROL é a referência.** Quando houver dúvida visual, vale o que está em produção no FAROL.
+2. **Base shadcn/ui.** Os componentes seguem o shadcn/ui com Tailwind v4. O azul do CAIS (`#0089E2`) é a cor de marca.
+3. **Componente antes de tela.** Uma tela nova só usa componentes que já existem aqui; se faltar algum, ele entra primeiro na biblioteca.
+4. **Acessibilidade é requisito.** Aumentar e diminuir fonte, foco visível, rótulos para leitor de tela e alto contraste fazem parte do sistema.
+5. **Dados fictícios.** Nenhuma história usa dados pessoais reais.
+
+## Como usar nos projetos
+
+```bash
+# No projeto consumidor (ex.: repo/front)
+pnpm add @cais/design-system@link:../storybook
+```
+
+```css
+/* src/index.css */
+@import '@cais/design-system/globals.css';
+@source '../../storybook/src';
+```
+
+```tsx
+import { AppLayout, HomePage } from '@cais/design-system'
+```

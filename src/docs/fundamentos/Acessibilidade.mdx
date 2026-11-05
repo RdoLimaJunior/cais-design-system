@@ -1,0 +1,74 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Fundamentos/Acessibilidade" tags={['!autodocs']} />
+
+# Acessibilidade
+
+O público dos sistemas do Instituto CAIS inclui pessoas com necessidades diferentes de leitura.
+Os recursos abaixo fazem parte do design system e valem para todos os sistemas.
+
+## Recursos do sistema
+
+| Recurso | Como funciona |
+| --- | --- |
+| **Aumentar e diminuir fonte** | Botões no grupo *Acessibilidade* do menu lateral. A escala vai de **100% a 130%**, em passos de **10%**. O botão fica desabilitado no limite. |
+| **Alto contraste** | Botão no mesmo grupo. Segue o protótipo do Figma: fundo preto, texto branco, títulos e botões principais em amarelo, bordas brancas, links sublinhados e logo em branco. O botão vira **Desativar alto contraste**. |
+| **Memória das preferências** | Fonte e contraste ficam salvos no navegador (`cais-font-scale` e `cais-high-contrast`) e voltam iguais depois de recarregar a página. |
+| **Menu recolhível** | Libera área útil. Cada ícone ganha `title` e `aria-label` quando o menu está recolhido. O estado também é lembrado (`cais-sidebar-collapsed`). |
+| **Página atual** | O item ativo do menu usa `aria-current="page"`. |
+| **Foco visível** | Todo controle mostra um anel de foco. No alto contraste, o anel é amarelo. |
+| **Modais** | Usam `role="alertdialog"`, prendem o foco e fecham com `Esc`. |
+| **Ícones decorativos** | Marcados com `aria-hidden`; o texto ao lado leva o significado. |
+| **Cor nunca sozinha** | Todo selo de status traz o texto do estado. A cor só reforça. |
+
+## Limites da fonte
+
+| Valor | Escala | Observação |
+| --- | --- | --- |
+| Mínimo | 100% | Não diminui abaixo do tamanho padrão. |
+| Passo | 10% | Cada clique soma ou subtrai 10 pontos. |
+| Máximo | 130% | Medido no FAROL em produção. |
+
+## Como usar nos projetos
+
+As preferências ficam em um único lugar, e o menu lateral já usa essa fonte. Para ler ou mudar por código:
+
+```tsx
+import { changeFontScale, setHighContrast, useAccessibilityPreferences } from '@cais/design-system'
+
+const { fontScale, isHighContrast } = useAccessibilityPreferences()
+
+changeFontScale(0.1) // aumenta 10 pontos, respeitando o limite
+setHighContrast(true)
+```
+
+O alto contraste liga o atributo `data-contrast="high"` no `<html>`. Os componentes que usam os tokens
+(`bg-background`, `text-foreground`, `border-border`, `bg-primary`) mudam sozinhos. Todo estilo novo com cor
+escrita direto na classe (por exemplo `text-[#0089e2]`) precisa de uma regra correspondente em
+`src/styles/globals.css`, no bloco *Alto contraste*.
+
+## Paleta do alto contraste
+
+| Elemento | Cor |
+| --- | --- |
+| Fundo da página e dos cartões | Preto `#000000` |
+| Texto | Branco `#FFFFFF` |
+| Títulos, botões principais e texto de botão de contorno | Amarelo `#FFFF00` |
+| Bordas e contorno de selos | Branco |
+| Botão principal | Fundo amarelo, texto preto |
+| Links | Brancos e sublinhados |
+| Foco | Contorno amarelo de 3 px |
+
+## Como testar no Storybook
+
+A barra superior tem dois controles:
+
+- **Fonte**: 100%, 110%, 120% e 130%. Vale para as histórias e para as páginas de documentação.
+- **Contraste**: normal ou alto contraste.
+
+Os controles e os botões do menu lateral andam juntos: mexer em um muda o outro.
+
+> No Storybook, a escala de fonte é aplicada na página inteira, inclusive no menu lateral.
+> No site publicado, o menu lateral não muda de tamanho; só o conteúdo.
+
+O addon de acessibilidade roda em cada história. Violações aparecem na aba *Accessibility*.
