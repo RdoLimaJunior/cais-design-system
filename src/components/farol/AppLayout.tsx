@@ -35,7 +35,8 @@ export type AppFrame = 'home' | 'profile' | 'profile-edit' | 'document' | 'repor
 
 export interface AppLayoutProps {
   frame?: AppFrame
-  breadcrumb: BreadcrumbItem[]
+  /** Trilha de navegação. Sem ela (ou vazia), a casca não mostra breadcrumb: use em sistemas sem subníveis. */
+  breadcrumb?: BreadcrumbItem[]
   breadcrumbVariant?: BreadcrumbVariant
   activeHref: string
   userName: string
@@ -158,7 +159,7 @@ const DEFAULT_BREADCRUMB_VARIANTS: Record<AppFrame, BreadcrumbVariant> = {
 
 export function AppLayout({
   frame = 'home',
-  breadcrumb,
+  breadcrumb = [],
   breadcrumbVariant,
   activeHref,
   userName,

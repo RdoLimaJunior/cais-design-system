@@ -29,7 +29,7 @@ export function CurrencyCell({
     <TableCell
       onClick={onClick}
       className={cn(
-        'text-right tabular-nums',
+        'text-right whitespace-nowrap tabular-nums',
         strong && 'font-bold',
         redIfNegative && number < 0 && 'text-destructive',
         className,

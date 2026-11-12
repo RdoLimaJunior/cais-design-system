@@ -65,19 +65,19 @@ Todos os componentes abaixo seguem o padrão do design system, com API em inglê
 | `DropdownMenu` | `DropdownMenu` ➕ | `destructivo` → `variant="destructive"` no item |
 | `Switch`, `RadioGroup`, `Textarea` | idem ➕ | Mesma API. `Switch` e `RadioGroup` agora são Radix |
 | `Progress` | `Progress` ➕ | `indicatorClassName="bg-success"` → `className="*:data-[slot=progress-indicator]:bg-success"` |
-| `Skeleton`, `Separator` | idem ➕ | Mesma API |
+| `Skeleton`, `Separator` | idem ➕ | Mesma API. O `Skeleton` é cinza claro (`zinc-200`, `zinc-700` no escuro) e não anima com `prefers-reduced-motion` |
 | `Spinner` | `Spinner` ➕ | `size="sm\|default\|lg"` → `className="size-4\|size-7\|size-10"` |
-| `PageLoader` | — | Não existe: componha `Spinner` + texto (exemplo em *Carregamento*) |
+| `PageLoader` | `PageLoader` ➕ | Carregamento de página inteira: `Spinner` centralizado + `label` opcional |
 | `Table`, `TableHeader fixo`... | `Table`... ➕ | `TableHeader fixo` → `sticky`. `containerClassName` continua; `containerStyle` e `containerRef` saem. As linhas deixam de ser zebradas |
 | `Input` | `Input` ✅ | Fundo transparente (no PMO era `bg-card`) |
 | `Label` | `Label` ✅ | |
 | `Tabs` | `Tabs` ✅ | Abas sublinhadas: `<TabsList variant="line">` |
 | `Avatar`, `Accordion` | idem ✅ | |
-| `Pagination` | `Pagination` ✅ | Props mudam: `paginaAtual` → `currentPage`, `totalPaginas` → `totalPages`, `aoMudarPagina` → `onPageChange`; o design system exige `ariaLabel`. `total` e `tamanhoPagina` não existem |
+| `Pagination` | `Pagination` ✅ ➕ | Props mudam: `paginaAtual` → `currentPage`, `totalPaginas` → `totalPages`, `aoMudarPagina` → `onPageChange`; o design system exige `ariaLabel`. `total` → `totalItems` e `tamanhoPagina` → `pageSize` (opcionais, mostram "Mostrando X–Y de Z"). Acima de 7 páginas mostra só uma janela com `…` |
 | `AvatarPessoa` | `PersonAvatar` ➕ | Iniciais sobre o azul de marca; não há cor por pessoa |
 | `Toaster` | `Toaster` e `toast` ➕ | Vem do `shadcn add sonner`, ligado ao tema do design system |
 | `Checkbox` | `Checkbox` ➕ | Do `shadcn add checkbox` |
-| `Combobox` | — ⏳ | Um único uso no PMO; ainda não portado |
+| `Combobox` | `Combobox` ➕ | `ariaLabel` → `aria-label`; `extraLabel` → `description`; `renderOption` saiu; ganhou `id`, `searchPlaceholder` e campo de busca próprio na lista |
 
 ### Componentes de domínio do PMO
 
@@ -89,6 +89,7 @@ Foram criados sobre `Input`, `Table`, `Card`, `Badge` e `Progress` do design sys
 | `InputMoeda` | `CurrencyInput` ➕ | `permiteNegativo` → `allowNegative`; `semSimbolo` → `hideSymbol`; `max` igual |
 | `InputPercentual` | `PercentInput` ➕ | `casasDecimais` → `decimals` |
 | `StatusBadge` | `ProjectStatusBadge` ➕ | `arquivado` → `archived`; `size` saiu |
+| `ProjetoCard` | `ProjectCard` ➕ | A moldura recebe só identificação e ações; o miolo são as seções `ProjectMonths`, `ProjectValues` e `ProjectRubrics`. Os dados vêm do front (as consultas ficam fora do design system). Sem barra de progresso: a execução é uma tira de meses (M1…Mn), cheios quando o mês tem fechamento |
 | `RubricaBadge` | `RubricBadge` ➕ | `rubrica` → `rubric` |
 | indicador de teto (`IncorridosTab`) | `IncurredCostsCap` ➕ | `percentual` → `percent`; `ajuda` → `help` |
 | `CurrencyDisplay` + `lib/formatting` | `formatCurrency`, `formatPercent` ➕ | |
@@ -96,7 +97,7 @@ Foram criados sobre `Input`, `Table`, `Card`, `Badge` e `Progress` do design sys
 | `AjudaTooltip` (de cada tela) | `HelpTip` ➕ | Ícone de ajuda com dica |
 | cartão de indicador (KPI) | `StatCard` ➕ | Rótulo pequeno e número grande |
 | selo de saúde | `HealthBadge` ➕ | Saudável, Atenção e Crítico |
-| `Breadcrumb` | `PageBreadcrumb` ✅ | |
+| `Breadcrumb` | `PageBreadcrumb` ✅ | O PMO não usa: sem subníveis, as telas de detalhe têm um botão "Voltar" em `actions`. O `AppLayout` aceita `breadcrumb` omitido |
 | `ProtectedComponent`, `CampoArquivo`, `ComprovantesPainel`, `TriagemEndpoints` | — | Ficam no PMO: dependem de API e de papel de usuário |
 
 ## 4. Layout, navegação e acessibilidade

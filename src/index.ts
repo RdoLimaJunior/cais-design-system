@@ -7,7 +7,7 @@
 
 // Base shadcn
 export { Button, buttonVariants } from './components/ui/button'
-export { Badge, badgeVariants } from './components/ui/badge'
+export { Badge, badgeVariants, type BadgeProps } from './components/ui/badge'
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card'
 export { Input } from './components/ui/input'
 export { Label } from './components/ui/label'
@@ -53,6 +53,8 @@ export { Switch } from './components/ui/switch'
 export { RadioGroup, RadioGroupItem } from './components/ui/radio-group'
 export { Separator } from './components/ui/separator'
 export { Skeleton } from './components/ui/skeleton'
+export { Combobox, type ComboboxOption, type ComboboxProps } from './components/ui/combobox'
+export { SearchAutocomplete, type SearchAutocompleteProps, type SearchSuggestion } from './components/ui/search-autocomplete'
 export { Spinner } from './components/ui/spinner'
 export { Checkbox } from './components/ui/checkbox'
 export { Toaster } from './components/ui/sonner'
@@ -66,6 +68,7 @@ export { ADMIN_NAV_ITEMS, SCHOLARSHIP_NAV_ITEMS } from './components/farol/navig
 export { PageBreadcrumb, type BreadcrumbItem, type BreadcrumbVariant } from './components/farol/PageBreadcrumb'
 export { SegmentedTabs, type SegmentedTabsProps } from './components/farol/SegmentedTabs'
 export { Pagination, type PaginationProps } from './components/farol/Pagination'
+export { PageLoader, type PageLoaderProps } from './components/farol/PageLoader'
 export { PageCard, type PageCardProps } from './components/farol/PageCard'
 export { PageSubtitle, PageTitle } from './components/farol/PageHeading'
 export { EditFooterLink } from './components/farol/EditFooterLink'
@@ -145,6 +148,19 @@ export { CurrencyInput } from './components/pmo/CurrencyInput'
 export { PercentInput } from './components/pmo/PercentInput'
 export { RUBRIC_GROUPS, RubricBadge } from './components/pmo/RubricBadge'
 export { ProjectStatusBadge, type ProjectStatus } from './components/pmo/ProjectStatusBadge'
+export { type ProjectMoney } from './components/pmo/projectOutcome'
+export {
+  ProjectCard,
+  ProjectMonths,
+  ProjectRubrics,
+  ProjectValues,
+  type ProjectCardProps,
+  type ProjectMonth,
+  type ProjectMonthsProps,
+  type ProjectRubricsProps,
+  type ProjectValuesProps,
+  type RubricGroup,
+} from './components/pmo/ProjectCard'
 export {
   INCURRED_COSTS_ALERT_PERCENT,
   INCURRED_COSTS_CAP_PERCENT,
