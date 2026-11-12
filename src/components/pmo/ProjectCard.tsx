@@ -142,8 +142,7 @@ export interface ProjectMonthsProps {
   unavailable?: boolean
 }
 
-// Grade de 6 colunas: 12 meses viram 2 linhas iguais, sem sobra solta na última.
-const MONTHS_GRID = 'grid grid-cols-6 gap-1'
+const MONTHS_GRID = 'flex flex-wrap gap-0.5'
 
 const MONTH_STYLES: Record<ProjectMonthState, string> = {
   closed: 'border-primary bg-primary text-primary-foreground',
@@ -168,7 +167,7 @@ export function ProjectMonths({ months, loading = false, unavailable = false }: 
       {loading ? (
         <div className={MONTHS_GRID} aria-hidden="true">
           {months.map((month) => (
-            <Skeleton key={month.number} className="h-7 rounded" />
+            <Skeleton key={month.number} className="h-6 w-7 rounded" />
           ))}
         </div>
       ) : (
@@ -181,7 +180,7 @@ export function ProjectMonths({ months, loading = false, unavailable = false }: 
                   <li
                     aria-label={`M${month.number}, ${month.label}: ${detail}`}
                     className={cn(
-                      'flex h-7 cursor-default items-center justify-center rounded border px-0.5 text-xs font-medium tabular-nums select-none',
+                      'flex h-6 min-w-7 cursor-default items-center justify-center rounded border px-0.5 text-xs font-medium tabular-nums select-none',
                       MONTH_STYLES[month.state]
                     )}
                   >
@@ -271,12 +270,12 @@ export function ProjectRubrics({ groups, loading = false, unavailable = false }:
                   <div
                     tabIndex={0}
                     aria-label={`${group.rubrics.length} ${group.label}. Passe o mouse ou foque para ver as rubricas.`}
-                    className="cursor-default rounded-md border px-2 py-1.5 text-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="cursor-default rounded-md border px-2 py-1 text-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <p className={cn('text-lg leading-tight font-semibold tabular-nums', isEmpty ? 'text-muted-foreground' : RUBRIC_TONE_TEXT[group.tone])}>
+                    <p className={cn('text-base leading-tight font-semibold tabular-nums', isEmpty ? 'text-muted-foreground' : RUBRIC_TONE_TEXT[group.tone])}>
                       {group.rubrics.length}
                     </p>
-                    <p className="text-xs text-muted-foreground">{group.label}</p>
+                    <p className="text-xs leading-tight text-muted-foreground">{group.label}</p>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-sm">
