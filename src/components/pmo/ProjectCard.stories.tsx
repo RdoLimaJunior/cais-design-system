@@ -74,6 +74,9 @@ const meta = {
     status: 'Execução',
     institute: 'CAIS',
     manager: 'Ana Gestora',
+    period: 'jan/25 – dez/25',
+    collaborators: 12,
+    updatedAt: '10/11/2026',
     onOpen: fn(),
     onArchive: fn(),
   },
@@ -117,6 +120,7 @@ export const Padrao: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('2 de 12 meses fechados')).toBeInTheDocument()
+    await expect(canvas.getByText('jan/25 – dez/25 · 12 colaboradores · atualizado em 10/11/2026')).toBeInTheDocument()
     await expect(canvas.getByText('Saldo Final Projetado')).toBeInTheDocument()
     await expect(canvas.getByText(/déficit de 23,12%/)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: 'Editar projeto' }))

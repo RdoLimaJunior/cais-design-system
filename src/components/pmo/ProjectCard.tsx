@@ -290,6 +290,12 @@ export interface ProjectCardProps {
   institute: string
   /** Gestor responsável; `null` mostra "Sem gestor atribuído". */
   manager?: string | null
+  /** Período do projeto já formatado, por exemplo "jan/25 – dez/26". */
+  period?: string
+  /** Quantidade de colaboradores alocados. */
+  collaborators?: number
+  /** Última atualização já formatada, por exemplo "10/11/2026". */
+  updatedAt?: string
   onOpen: () => void
   /** Omitido quando o usuário não pode arquivar (ou o projeto já está arquivado): o botão some. */
   onArchive?: () => void
@@ -322,12 +328,21 @@ export function ProjectCard({
   archived = false,
   institute,
   manager,
+  period,
+  collaborators,
+  updatedAt,
   onOpen,
   onArchive,
   archiving = false,
   children,
   className,
 }: ProjectCardProps) {
+  const facts = [
+    period,
+    typeof collaborators === 'number' ? `${collaborators} ${collaborators === 1 ? 'colaborador' : 'colaboradores'}` : undefined,
+    updatedAt ? `atualizado em ${updatedAt}` : undefined,
+  ].filter(Boolean)
+
   return (
     <Card data-slot="project-card" className={cn('gap-4', archived && 'bg-muted/40', className)}>
       <CardHeader className="gap-1.5 border-b pb-4">
@@ -360,6 +375,7 @@ export function ProjectCard({
             )}
           </span>
         </div>
+        {facts.length > 0 && <p className="text-xs text-muted-foreground tabular-nums">{facts.join(' · ')}</p>}
       </CardHeader>
       <CardContent className="flex flex-1 flex-col divide-y text-sm [&>*]:py-4 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
         {children}
