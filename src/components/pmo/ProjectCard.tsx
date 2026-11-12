@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { IconArchive, IconPencil } from '@tabler/icons-react'
 import { formatCurrency, formatPercent } from '../../lib/finance'
 import { cn } from '../../lib/utils'
-import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Skeleton } from '../ui/skeleton'
@@ -85,30 +84,34 @@ export function ProjectValues({ cashBalance, projectedFinalBalance, contractedCo
   return (
     <section data-slot="project-values">
       <SectionLabel>Valores</SectionLabel>
-      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">Saldo Final Projetado</p>
-          <div className="text-xl leading-tight font-semibold">
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">Saldo Final Projetado</p>
+            <p className={cn('min-h-4 text-xs', outcomeText)} title={description?.full}>
+              {description?.short}
+            </p>
+          </div>
+          <div className="shrink-0 text-xl leading-tight font-semibold">
             <Money value={projectedFinalBalance} className={outcomeText} />
           </div>
-          <p className={cn('min-h-4 text-xs', outcomeText)} title={description?.full}>
-            {description?.short}
-          </p>
         </div>
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">Saldo em Conta</p>
-          <div className="text-base font-semibold">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">Saldo em Conta</p>
+            <p className="min-h-4 text-xs text-muted-foreground">caixa disponível hoje</p>
+          </div>
+          <div className="shrink-0 text-xl leading-tight font-semibold">
             <Money value={cashBalance} />
           </div>
-          <p className="min-h-4 text-xs text-muted-foreground">caixa disponível hoje</p>
         </div>
       </div>
-      <dl className="mt-4 space-y-1.5 text-sm">
+      <dl className="mt-4 space-y-2 rounded-md bg-muted/40 p-3 text-sm">
         <MoneyRow label="Aporte Contratado" value={contractedContribution} />
         <MoneyRow
-          label="Total Realizado (sem taxa)"
+          label="Total Realizado"
           value={totalRealized}
-          note={typeof realizedPercent === 'number' ? `${formatPercent(realizedPercent, 1)} do previsto` : undefined}
+          note={typeof realizedPercent === 'number' ? `sem taxa · ${formatPercent(realizedPercent, 1)} do previsto` : 'sem taxa'}
         />
         <MoneyRow label="Taxa Instituto (Repasse)" value={instituteFee} />
       </dl>
@@ -139,6 +142,9 @@ export interface ProjectMonthsProps {
   unavailable?: boolean
 }
 
+// Grade de 6 colunas: 12 meses viram 2 linhas iguais, sem sobra solta na última.
+const MONTHS_GRID = 'grid grid-cols-6 gap-1'
+
 const MONTH_STYLES: Record<ProjectMonthState, string> = {
   closed: 'border-primary bg-primary text-primary-foreground',
   current: 'border-primary bg-background text-primary ring-2 ring-primary/30',
@@ -160,13 +166,13 @@ export function ProjectMonths({ months, loading = false, unavailable = false }: 
     <section data-slot="project-months">
       <SectionLabel aside={summary}>Execução</SectionLabel>
       {loading ? (
-        <div className="flex flex-wrap gap-0.5" aria-hidden="true">
+        <div className={MONTHS_GRID} aria-hidden="true">
           {months.map((month) => (
-            <Skeleton key={month.number} className="h-6 w-7 rounded" />
+            <Skeleton key={month.number} className="h-7 rounded" />
           ))}
         </div>
       ) : (
-        <ol className="flex flex-wrap gap-0.5" aria-label={`Meses do projeto: ${closedCount} de ${months.length} fechados`}>
+        <ol className={MONTHS_GRID} aria-label={`Meses do projeto: ${closedCount} de ${months.length} fechados`}>
           {months.map((month) => {
             const detail = month.detail ?? MONTH_DEFAULT_DETAIL[month.state]
             return (
@@ -175,7 +181,7 @@ export function ProjectMonths({ months, loading = false, unavailable = false }: 
                   <li
                     aria-label={`M${month.number}, ${month.label}: ${detail}`}
                     className={cn(
-                      'flex h-6 min-w-7 cursor-default items-center justify-center rounded border px-0.5 text-xs font-medium tabular-nums select-none',
+                      'flex h-7 cursor-default items-center justify-center rounded border px-0.5 text-xs font-medium tabular-nums select-none',
                       MONTH_STYLES[month.state]
                     )}
                   >
@@ -219,7 +225,7 @@ export interface ProjectRubricsProps {
   unavailable?: boolean
 }
 
-const RUBRIC_BADGE_VARIANT = { success: 'success', destructive: 'destructive', neutral: 'secondary' } as const
+const RUBRIC_TONE_TEXT: Record<RubricTone, string> = { success: 'text-success', destructive: 'text-destructive', neutral: 'text-foreground' }
 
 function RubricGroupDetail({ group }: { group: RubricGroup }) {
   if (group.rubrics.length === 0) return <p className="text-xs">Nenhuma rubrica neste grupo.</p>
@@ -240,8 +246,8 @@ function RubricGroupDetail({ group }: { group: RubricGroup }) {
 }
 
 /**
- * Rubricas com sobra, estouradas e sem movimento como selos; o detalhe de cada grupo aparece ao passar o mouse ou focar.
- * Os três selos ficam sempre nos mesmos lugares (mesmo com zero) para os cartões poderem ser comparados.
+ * Rubricas com sobra, estouradas e sem movimento em três blocos de mesma largura; o detalhe de cada grupo aparece ao passar o mouse ou focar.
+ * Os três blocos ficam sempre nos mesmos lugares (mesmo com zero) para os cartões poderem ser comparados.
  */
 export function ProjectRubrics({ groups, loading = false, unavailable = false }: ProjectRubricsProps) {
   return (
@@ -256,24 +262,29 @@ export function ProjectRubrics({ groups, loading = false, unavailable = false }:
       ) : unavailable ? (
         <p className="text-xs text-muted-foreground">Não foi possível carregar as rubricas.</p>
       ) : (
-        <div className="flex flex-wrap gap-1.5">
-          {groups.map((group) => (
-            <Tooltip key={group.key}>
-              <TooltipTrigger asChild>
-                <Badge
-                  variant={group.rubrics.length > 0 ? RUBRIC_BADGE_VARIANT[group.tone] : 'outline'}
-                  tabIndex={0}
-                  aria-label={`${group.rubrics.length} ${group.label}. Passe o mouse ou foque para ver as rubricas.`}
-                  className="cursor-default"
-                >
-                  {group.rubrics.length} {group.label}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-sm">
-                <RubricGroupDetail group={group} />
-              </TooltipContent>
-            </Tooltip>
-          ))}
+        <div className="grid grid-cols-3 gap-2">
+          {groups.map((group) => {
+            const isEmpty = group.rubrics.length === 0
+            return (
+              <Tooltip key={group.key}>
+                <TooltipTrigger asChild>
+                  <div
+                    tabIndex={0}
+                    aria-label={`${group.rubrics.length} ${group.label}. Passe o mouse ou foque para ver as rubricas.`}
+                    className="cursor-default rounded-md border px-2 py-1.5 text-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <p className={cn('text-lg leading-tight font-semibold tabular-nums', isEmpty ? 'text-muted-foreground' : RUBRIC_TONE_TEXT[group.tone])}>
+                      {group.rubrics.length}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{group.label}</p>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-sm">
+                  <RubricGroupDetail group={group} />
+                </TooltipContent>
+              </Tooltip>
+            )
+          })}
         </div>
       )}
     </section>
@@ -288,7 +299,7 @@ export interface ProjectCardProps {
   /** Projeto arquivado é somente leitura (RN-EX04). */
   archived?: boolean
   institute: string
-  /** Gestor responsável; `null` mostra "Sem gestor atribuído". */
+  /** Gestor responsável; `null` mostra "Sem gestor". */
   manager?: string | null
   /** Período do projeto já formatado, por exemplo "jan/25 – dez/26". */
   period?: string
@@ -303,6 +314,20 @@ export interface ProjectCardProps {
   /** Seções do card, na ordem em que devem aparecer: `ProjectMonths`, `ProjectValues` e `ProjectRubrics`. */
   children?: ReactNode
   className?: string
+}
+
+/** Um dado do cabeçalho: rótulo pequeno em cima, valor embaixo. Sem valor, mostra o texto alternativo ou some. */
+function HeaderFact({ label, value, fallback }: { label: string; value?: string; fallback?: string }) {
+  const text = value ?? fallback
+  if (!text) return null
+  return (
+    <div className="min-w-0">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={cn('truncate text-sm', value ? 'font-medium text-foreground' : 'text-muted-foreground')} title={text}>
+        {text}
+      </dd>
+    </div>
+  )
 }
 
 function IconAction({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: ReactNode }) {
@@ -337,12 +362,6 @@ export function ProjectCard({
   children,
   className,
 }: ProjectCardProps) {
-  const facts = [
-    period,
-    typeof collaborators === 'number' ? `${collaborators} ${collaborators === 1 ? 'colaborador' : 'colaboradores'}` : undefined,
-    updatedAt ? `atualizado em ${updatedAt}` : undefined,
-  ].filter(Boolean)
-
   return (
     <Card data-slot="project-card" className={cn('gap-4', archived && 'bg-muted/40', className)}>
       <CardHeader className="gap-1.5 border-b pb-4">
@@ -361,21 +380,16 @@ export function ProjectCard({
             </IconAction>
           )}
         </CardAction>
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <ProjectStatusBadge status={status} archived={archived} />
           <span>{institute}</span>
-          <span aria-hidden="true">·</span>
-          <span>
-            {manager ? (
-              <>
-                Gestor <span className="font-medium text-foreground">{manager}</span>
-              </>
-            ) : (
-              'Sem gestor atribuído'
-            )}
-          </span>
         </div>
-        {facts.length > 0 && <p className="text-xs text-muted-foreground tabular-nums">{facts.join(' · ')}</p>}
+        <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+          <HeaderFact label="Gestor" value={manager || undefined} fallback="Sem gestor" />
+          <HeaderFact label="Período" value={period} />
+          <HeaderFact label="Colaboradores" value={typeof collaborators === 'number' ? String(collaborators) : undefined} />
+          <HeaderFact label="Atualizado em" value={updatedAt} />
+        </dl>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col divide-y text-sm [&>*]:py-4 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
         {children}

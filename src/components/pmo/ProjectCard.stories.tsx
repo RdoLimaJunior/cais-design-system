@@ -120,7 +120,7 @@ export const Padrao: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('2 de 12 meses fechados')).toBeInTheDocument()
-    await expect(canvas.getByText('jan/25 – dez/25 · 12 colaboradores · atualizado em 10/11/2026')).toBeInTheDocument()
+    await expect(canvas.getByText('jan/25 – dez/25')).toBeInTheDocument()
     await expect(canvas.getByText('Saldo Final Projetado')).toBeInTheDocument()
     await expect(canvas.getByText(/déficit de 23,12%/)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: 'Editar projeto' }))
@@ -179,7 +179,7 @@ export const DetalheDasRubricas: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.hover(canvas.getByText('2 estouradas'))
+    await userEvent.hover(canvas.getByLabelText(/^2 estouradas/))
     await expect((await within(document.body).findAllByText('Viagens e Diárias')).length).toBeGreaterThan(0)
   },
 }
@@ -208,6 +208,6 @@ export const SemPermissaoParaArquivar: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.queryByRole('button', { name: 'Arquivar projeto' })).not.toBeInTheDocument()
-    await expect(canvas.getByText('Sem gestor atribuído')).toBeInTheDocument()
+    await expect(canvas.getByText('Sem gestor')).toBeInTheDocument()
   },
 }
