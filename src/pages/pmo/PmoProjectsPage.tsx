@@ -68,7 +68,7 @@ function rubricGroupsOf(project: ProjetoMock): RubricGroup[] {
   return [
     { key: 'surplus', label: 'com sobra', tone: 'success', rubrics: surplus.map((r) => ({ name: r.nome, value: r.previsto - r.executado })), total: sum(surplus.map((r) => r.previsto - r.executado)), totalLabel: 'sobra' },
     { key: 'overrun', label: 'estouradas', tone: 'destructive', rubrics: overrun.map((r) => ({ name: r.nome, value: r.executado - r.previsto })), total: sum(overrun.map((r) => r.executado - r.previsto)), totalLabel: 'estouro' },
-    { key: 'idle', label: 'sem movimento', tone: 'neutral', rubrics: idle.map((r) => ({ name: r.nome, value: r.previsto })), total: sum(idle.map((r) => r.previsto)), totalLabel: 'previsto' },
+    { key: 'idle', label: 'paradas', tone: 'neutral', rubrics: idle.map((r) => ({ name: r.nome, value: r.previsto })), total: sum(idle.map((r) => r.previsto)), totalLabel: 'previsto' },
   ]
 }
 

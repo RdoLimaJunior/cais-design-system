@@ -208,7 +208,7 @@ export type RubricTone = 'success' | 'destructive' | 'neutral'
 
 export interface RubricGroup {
   key: string
-  /** Texto depois da contagem: "com sobra", "estouradas", "sem movimento". */
+  /** Texto depois da contagem: "com sobra", "estouradas", "paradas". */
   label: string
   tone: RubricTone
   /** Rubricas do grupo com o valor que o grupo soma, mostradas no tooltip. */
@@ -224,6 +224,7 @@ export interface ProjectRubricsProps {
   unavailable?: boolean
 }
 
+const RUBRIC_TONE_TEXT: Record<RubricTone, string> = { success: 'text-success', destructive: 'text-destructive', neutral: 'text-foreground' }
 const RUBRIC_TONE_DOT: Record<RubricTone, string> = { success: 'bg-success', destructive: 'bg-destructive', neutral: 'bg-foreground' }
 
 function RubricGroupDetail({ group }: { group: RubricGroup }) {
@@ -245,8 +246,8 @@ function RubricGroupDetail({ group }: { group: RubricGroup }) {
 }
 
 /**
- * Rubricas com sobra, estouradas e sem movimento em uma linha, cada um com um ponto colorido; o detalhe de cada grupo aparece ao passar o mouse ou focar.
- * Os três itens ficam sempre nos mesmos lugares (mesmo com zero) para os cartões poderem ser comparados.
+ * Rubricas com sobra, estouradas e paradas em uma linha, cada um com um ponto colorido; o detalhe de cada grupo aparece ao passar o mouse ou focar.
+ * Os três itens aparecem sempre, mesmo com zero, na mesma ordem; em cartão estreito o último pode passar para a linha de baixo.
  */
 export function ProjectRubrics({ groups, loading = false, unavailable = false }: ProjectRubricsProps) {
   return (
@@ -268,15 +269,15 @@ export function ProjectRubrics({ groups, loading = false, unavailable = false }:
               <li key={group.key}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span
-                      tabIndex={0}
+                    <button
+                      type="button"
                       aria-label={`${group.rubrics.length} ${group.label}. Passe o mouse ou foque para ver as rubricas.`}
-                      className="inline-flex cursor-default items-center gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex cursor-default items-center gap-1 rounded-sm bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <span aria-hidden="true" className={cn('size-2 rounded-full', isEmpty ? 'bg-muted-foreground/40' : RUBRIC_TONE_DOT[group.tone])} />
-                      <span className="font-semibold tabular-nums">{group.rubrics.length}</span>
+                      <span className={cn('font-semibold tabular-nums', !isEmpty && RUBRIC_TONE_TEXT[group.tone])}>{group.rubrics.length}</span>
                       <span className="text-muted-foreground">{group.label}</span>
-                    </span>
+                    </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-sm">
                     <RubricGroupDetail group={group} />

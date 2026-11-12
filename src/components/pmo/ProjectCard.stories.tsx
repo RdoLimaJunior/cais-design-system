@@ -42,7 +42,7 @@ const GROUPS: RubricGroup[] = [
   },
   {
     key: 'idle',
-    label: 'sem movimento',
+    label: 'paradas',
     tone: 'neutral',
     rubrics: [{ name: 'Serviços de Terceiros', value: 60_000 }],
     total: 60_000,
