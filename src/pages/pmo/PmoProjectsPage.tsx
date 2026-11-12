@@ -1,18 +1,25 @@
 import { useState } from 'react'
-import { IconArchive, IconLayoutGrid, IconList, IconPencil, IconPlus } from '@tabler/icons-react'
+import { IconLayoutGrid, IconList, IconPlus } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert'
 import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Progress } from '../../components/ui/progress'
+import { Card } from '../../components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
 import { CurrencyCell } from '../../components/pmo/CurrencyCell'
+import {
+  ProjectCard,
+  ProjectMonths,
+  ProjectRubrics,
+  ProjectValues,
+  type ProjectMonth,
+  type RubricGroup,
+} from '../../components/pmo/ProjectCard'
 import { HealthBadge } from '../../components/pmo/HealthBadge'
 import type { PmoRole } from '../../components/pmo/navigation'
 import { PmoPage } from '../../components/pmo/PmoPage'
 import { ProjectStatusBadge } from '../../components/pmo/ProjectStatusBadge'
-import { formatCurrency, formatPercent } from '../../lib/finance'
+import { formatPercent } from '../../lib/finance'
 import { PMO_PROJETOS, type ProjetoMock } from '../../mocks/pmo'
 
 type ProjectsTab = 'projetos' | 'simulacao' | 'arquivados'
@@ -37,57 +44,58 @@ function progressOf(project: ProjetoMock): number {
   return project.orcamento > 0 ? Math.min((project.gasto / project.orcamento) * 100, 100) : 0
 }
 
-function ProjectCard({ project, onOpen }: { project: ProjetoMock; onOpen?: () => void }) {
+const MONTH_ABBREVIATIONS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+const EXAMPLE_FEE_RATE = 0.1
+
+/** "01/2026 a 12/2026" vira os meses do projeto; os primeiros, na proporção do que já foi gasto, aparecem como fechados. */
+function monthsOf(project: ProjetoMock): ProjectMonth[] {
+  const [start, end] = project.vigencia.split(' a ').map((part) => part.split('/').map(Number))
+  const total = (end[1] - start[1]) * 12 + (end[0] - start[0]) + 1
+  const closed = project.arquivado ? total : Math.floor((progressOf(project) / 100) * total)
+  return Array.from({ length: total }, (_, index) => {
+    const monthIndex = (start[0] - 1 + index) % 12
+    const year = start[1] + Math.floor((start[0] - 1 + index) / 12)
+    const state = index < closed ? 'closed' : index === closed && !project.arquivado ? 'current' : 'open'
+    return { number: index + 1, label: `${MONTH_ABBREVIATIONS[monthIndex]}/${String(year).slice(2)}`, state }
+  })
+}
+
+function rubricGroupsOf(project: ProjetoMock): RubricGroup[] {
+  const surplus = project.rubricas.filter((rubric) => rubric.executado > 0 && rubric.executado < rubric.previsto)
+  const overrun = project.rubricas.filter((rubric) => rubric.executado > rubric.previsto)
+  const idle = project.rubricas.filter((rubric) => rubric.executado === 0)
+  const sum = (values: number[]) => values.reduce((total, value) => total + value, 0)
+  return [
+    { key: 'surplus', label: 'com sobra', tone: 'success', rubrics: surplus.map((r) => ({ name: r.nome, value: r.previsto - r.executado })), total: sum(surplus.map((r) => r.previsto - r.executado)), totalLabel: 'sobra' },
+    { key: 'overrun', label: 'estouradas', tone: 'destructive', rubrics: overrun.map((r) => ({ name: r.nome, value: r.executado - r.previsto })), total: sum(overrun.map((r) => r.executado - r.previsto)), totalLabel: 'estouro' },
+    { key: 'idle', label: 'sem movimento', tone: 'neutral', rubrics: idle.map((r) => ({ name: r.nome, value: r.previsto })), total: sum(idle.map((r) => r.previsto)), totalLabel: 'previsto' },
+  ]
+}
+
+function ProjectCardExample({ project, onOpen }: { project: ProjetoMock; onOpen?: () => void }) {
+  const fee = project.gasto * EXAMPLE_FEE_RATE
+  const finalBalance = project.orcamento - project.gasto - fee
   return (
-    <Card className="gap-4">
-      <CardHeader className="gap-2">
-        <CardTitle className="leading-snug">
-          <button type="button" onClick={onOpen} className="text-left hover:underline">
-            {project.titulo}
-          </button>
-        </CardTitle>
-        <div className="flex flex-wrap items-center gap-2">
-          <ProjectStatusBadge status={project.status} archived={project.arquivado} />
-          <Badge variant="outline">{project.instituto}</Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <p className="text-muted-foreground">
-          Gestor: <span className="text-foreground">{project.responsavel}</span>
-        </p>
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Progresso</span>
-            <span className="tabular-nums">{formatPercent(progressOf(project), 0)}</span>
-          </div>
-          <Progress value={progressOf(project)} aria-label={`Progresso de ${project.titulo}`} />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Vigência</span>
-          <span>{project.vigencia}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Saúde do projeto</span>
-          <HealthBadge health={project.saude} />
-        </div>
-        <div className="flex items-center justify-between border-t pt-3">
-          <span className="text-muted-foreground">Orçamento total</span>
-          <span className="font-semibold tabular-nums">{formatCurrency(project.orcamento)}</span>
-        </div>
-        <div className="flex gap-2 pt-1">
-          <Button variant="outline" size="sm" onClick={onOpen}>
-            <IconPencil aria-hidden="true" />
-            Editar projeto
-          </Button>
-          {!project.arquivado && (
-            <Button variant="ghost" size="sm">
-              <IconArchive aria-hidden="true" />
-              Arquivar projeto
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <ProjectCard
+      title={project.titulo}
+      status={project.status}
+      archived={project.arquivado}
+      institute={project.instituto}
+      manager={project.responsavel}
+      onOpen={() => onOpen?.()}
+      onArchive={() => {}}
+    >
+      <ProjectMonths months={monthsOf(project)} />
+      <ProjectValues
+        cashBalance={project.orcamento - project.gasto}
+        projectedFinalBalance={finalBalance}
+        contractedContribution={project.orcamento}
+        totalRealized={project.gasto}
+        realizedPercent={progressOf(project)}
+        instituteFee={fee}
+      />
+      <ProjectRubrics groups={rubricGroupsOf(project)} />
+    </ProjectCard>
   )
 }
 
@@ -204,7 +212,7 @@ export function PmoProjectsPage({
       ) : view === 'cards' ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visible.map((project) => (
-            <ProjectCard key={project.id} project={project} onOpen={() => onOpenProject?.(project.id)} />
+            <ProjectCardExample key={project.id} project={project} onOpen={() => onOpenProject?.(project.id)} />
           ))}
         </div>
       ) : (

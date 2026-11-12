@@ -39,7 +39,7 @@ export function StepSection({ stepNumber, title, descriptions = [], isTitleWrapp
         ) : (
           <h2 className="text-lg font-medium">{title}</h2>
         )}
-        <span className={cn('rounded px-2 py-1 text-xs', isActive ? 'bg-zinc-100' : 'bg-white')}>Passo {stepNumber}</span>
+        <span className={cn('shrink-0 rounded px-2 py-1 text-xs whitespace-nowrap', isActive ? 'bg-zinc-100' : 'bg-white')}>Passo {stepNumber}</span>
       </div>
       {children}
     </section>
