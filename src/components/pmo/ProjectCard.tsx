@@ -367,7 +367,7 @@ export function ProjectCard({
     <Card data-slot="project-card" className={cn('gap-4', archived && 'bg-muted/40', className)}>
       <CardHeader className="gap-1.5 border-b pb-4">
         <CardTitle className="leading-snug">
-          <button type="button" onClick={onOpen} className="line-clamp-2 text-left text-primary hover:underline">
+          <button type="button" onClick={onOpen} className="line-clamp-2 text-left text-primary">
             {title}
           </button>
         </CardTitle>
