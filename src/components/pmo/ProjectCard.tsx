@@ -224,7 +224,7 @@ export interface ProjectRubricsProps {
   unavailable?: boolean
 }
 
-const RUBRIC_TONE_TEXT: Record<RubricTone, string> = { success: 'text-success', destructive: 'text-destructive', neutral: 'text-foreground' }
+const RUBRIC_TONE_DOT: Record<RubricTone, string> = { success: 'bg-success', destructive: 'bg-destructive', neutral: 'bg-foreground' }
 
 function RubricGroupDetail({ group }: { group: RubricGroup }) {
   if (group.rubrics.length === 0) return <p className="text-xs">Nenhuma rubrica neste grupo.</p>
@@ -245,8 +245,8 @@ function RubricGroupDetail({ group }: { group: RubricGroup }) {
 }
 
 /**
- * Rubricas com sobra, estouradas e sem movimento em três blocos de mesma largura; o detalhe de cada grupo aparece ao passar o mouse ou focar.
- * Os três blocos ficam sempre nos mesmos lugares (mesmo com zero) para os cartões poderem ser comparados.
+ * Rubricas com sobra, estouradas e sem movimento em uma linha, cada um com um ponto colorido; o detalhe de cada grupo aparece ao passar o mouse ou focar.
+ * Os três itens ficam sempre nos mesmos lugares (mesmo com zero) para os cartões poderem ser comparados.
  */
 export function ProjectRubrics({ groups, loading = false, unavailable = false }: ProjectRubricsProps) {
   return (
@@ -261,30 +261,31 @@ export function ProjectRubrics({ groups, loading = false, unavailable = false }:
       ) : unavailable ? (
         <p className="text-xs text-muted-foreground">Não foi possível carregar as rubricas.</p>
       ) : (
-        <div className="grid grid-cols-3 gap-2">
+        <ul className="flex flex-wrap gap-x-2 gap-y-1 text-xs">
           {groups.map((group) => {
             const isEmpty = group.rubrics.length === 0
             return (
-              <Tooltip key={group.key}>
-                <TooltipTrigger asChild>
-                  <div
-                    tabIndex={0}
-                    aria-label={`${group.rubrics.length} ${group.label}. Passe o mouse ou foque para ver as rubricas.`}
-                    className="cursor-default rounded-md border px-2 py-1 text-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <p className={cn('text-base leading-tight font-semibold tabular-nums', isEmpty ? 'text-muted-foreground' : RUBRIC_TONE_TEXT[group.tone])}>
-                      {group.rubrics.length}
-                    </p>
-                    <p className="text-xs leading-tight text-muted-foreground">{group.label}</p>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-sm">
-                  <RubricGroupDetail group={group} />
-                </TooltipContent>
-              </Tooltip>
+              <li key={group.key}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      tabIndex={0}
+                      aria-label={`${group.rubrics.length} ${group.label}. Passe o mouse ou foque para ver as rubricas.`}
+                      className="inline-flex cursor-default items-center gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span aria-hidden="true" className={cn('size-2 rounded-full', isEmpty ? 'bg-muted-foreground/40' : RUBRIC_TONE_DOT[group.tone])} />
+                      <span className="font-semibold tabular-nums">{group.rubrics.length}</span>
+                      <span className="text-muted-foreground">{group.label}</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-sm">
+                    <RubricGroupDetail group={group} />
+                  </TooltipContent>
+                </Tooltip>
+              </li>
             )
           })}
-        </div>
+        </ul>
       )}
     </section>
   )
