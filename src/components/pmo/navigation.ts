@@ -1,6 +1,7 @@
 import {
   IconBrain,
   IconClipboardCheck,
+  IconShoppingCart,
   IconLayoutDashboard,
   IconSettings,
   IconShieldCheck,
@@ -20,6 +21,8 @@ interface PmoNavChild {
   label: string
   href: string
   roles: readonly PmoRole[]
+  /** Página ainda não existe: o item aparece, mas não abre. */
+  isDisabled?: boolean
 }
 
 interface PmoNavItem extends Omit<SidebarNavItem, 'children'> {
@@ -62,6 +65,21 @@ const PMO_NAV_ITEMS: readonly PmoNavItem[] = [
       { label: 'Auditoria', href: '/app/auditoria', roles: OPERATIONAL_ROLES },
     ],
   },
+  {
+    // Módulo SCSP: a estrutura do menu já existe, as páginas vêm depois. Os papéis do SCSP (Solicitante, Compras, Jurídico...)
+    // ainda não foram mapeados para os do PMO; até lá, vale a regra provisória de Admin, Gestor e Analista.
+    label: 'Compras e Serviços',
+    icon: IconShoppingCart,
+    roles: OPERATIONAL_ROLES,
+    children: [
+      { label: 'Todas as solicitações', href: '/app/compras/solicitacoes', roles: OPERATIONAL_ROLES, isDisabled: true },
+      { label: 'Nova compra de produtos', href: '/app/compras/solicitacoes/nova-compra', roles: OPERATIONAL_ROLES, isDisabled: true },
+      { label: 'Nova contratação de serviço', href: '/app/compras/solicitacoes/nova-contratacao', roles: OPERATIONAL_ROLES, isDisabled: true },
+      { label: 'Alarmes de cobrança', href: '/app/compras/alarmes', roles: OPERATIONAL_ROLES, isDisabled: true },
+      { label: 'Contratos e serviços', href: '/app/compras/contratos', roles: OPERATIONAL_ROLES, isDisabled: true },
+      { label: 'Fornecedores', href: '/app/compras/fornecedores', roles: OPERATIONAL_ROLES, isDisabled: true },
+    ],
+  },
   { label: 'Configurações', icon: IconSettings, href: '/app/configuracoes', roles: ['ADMIN'] },
 ]
 
@@ -73,6 +91,6 @@ export function pmoNavItemsFor(role: PmoRole): SidebarNavItem[] {
     // Item com páginas filhas some quando o papel não vê nenhuma delas.
     return visibleChildren.length === 0
       ? []
-      : [{ label, icon, children: visibleChildren.map((child) => ({ label: child.label, href: child.href })) }]
+      : [{ label, icon, children: visibleChildren.map((child) => ({ label: child.label, href: child.href, isDisabled: child.isDisabled })) }]
   })
 }
