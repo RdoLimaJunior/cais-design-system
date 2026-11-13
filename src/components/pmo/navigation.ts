@@ -49,6 +49,7 @@ const PMO_NAV_ITEMS: readonly PmoNavItem[] = [
     roles: ALL_ROLES,
     children: [
       { label: 'Projetos', href: '/app/projetos', roles: ALL_ROLES },
+      { label: 'Simulador de Projetos', href: '/app/simulador-projetos', roles: OPERATIONAL_ROLES, isDisabled: true },
       { label: 'Colaboradores', href: '/app/colaboradores', roles: OPERATIONAL_ROLES },
       { label: 'Simulador RPA', href: '/app/simulador-rpa', roles: OPERATIONAL_ROLES },
       { label: 'Plano de Trabalho', href: '/app/orcamento', roles: ALL_ROLES },
