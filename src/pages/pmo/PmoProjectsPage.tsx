@@ -35,7 +35,7 @@ export interface PmoProjectsPageProps {
 }
 
 const EMPTY_TEXT: Record<ProjectsTab, string> = {
-  projetos: 'Crie um projeto ou confira as abas Simulação e Arquivados.',
+  projetos: 'Crie um projeto ou confira as abas Em Planejamento e Arquivados.',
   simulacao: 'Nenhum projeto em planejamento.',
   arquivados: 'Nenhum projeto arquivado.',
 }
@@ -134,7 +134,7 @@ function ProjectsTable({ projects, onOpen }: { projects: ProjetoMock[]; onOpen?:
   )
 }
 
-/** Lista de projetos: abas Projetos (em execução), Simulação (em planejamento) e Arquivados, em cartões ou em lista. */
+/** Lista de projetos: abas Em Execução, Em Planejamento e Arquivados, em cartões ou em lista. */
 export function PmoProjectsPage({
   projetos = PMO_PROJETOS,
   role = 'GESTOR',
@@ -157,7 +157,7 @@ export function PmoProjectsPage({
       activeHref="/app/projetos"
       breadcrumb={[{ label: 'Projetos' }]}
       title="Projetos"
-      subtitle="Projetos em execução, em simulação e arquivados."
+      subtitle="Projetos em execução, em planejamento e arquivados."
       role={role}
       actions={
         canCreate && (
@@ -172,10 +172,10 @@ export function PmoProjectsPage({
         <Tabs value={tab} onValueChange={(value) => setTab(value as ProjectsTab)}>
           <TabsList variant="line" className="flex-wrap group-data-[orientation=horizontal]/tabs:h-auto">
             <TabsTrigger value="projetos">
-              Projetos <Badge variant="secondary">{inExecution.length}</Badge>
+              Em Execução <Badge variant="secondary">{inExecution.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="simulacao">
-              Simulação <Badge variant="secondary">{inPlanning.length}</Badge>
+              Em Planejamento <Badge variant="secondary">{inPlanning.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="arquivados">
               Arquivados <Badge variant="secondary">{archived.length}</Badge>
