@@ -54,6 +54,7 @@ export { RadioGroup, RadioGroupItem } from './components/ui/radio-group'
 export { Separator } from './components/ui/separator'
 export { Skeleton } from './components/ui/skeleton'
 export { Combobox, type ComboboxOption, type ComboboxProps } from './components/ui/combobox'
+export { SortMenu, type SortMenuOption, type SortMenuProps } from './components/ui/sort-menu'
 export { SearchAutocomplete, type SearchAutocompleteProps, type SearchSuggestion } from './components/ui/search-autocomplete'
 export { Spinner } from './components/ui/spinner'
 export { Checkbox } from './components/ui/checkbox'
@@ -152,11 +153,13 @@ export { type ProjectMoney } from './components/pmo/projectOutcome'
 export {
   ProjectCard,
   ProjectMonths,
+  ProjectIncurredCosts,
   ProjectRubrics,
   ProjectValues,
   type ProjectCardProps,
   type ProjectMonth,
   type ProjectMonthsProps,
+  type ProjectIncurredCostsProps,
   type ProjectRubricsProps,
   type ProjectValuesProps,
   type RubricGroup,

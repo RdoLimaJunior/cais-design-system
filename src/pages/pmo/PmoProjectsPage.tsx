@@ -4,16 +4,16 @@ import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert'
 import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
+import { SortMenu } from '../../components/ui/sort-menu'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
 import { CurrencyCell } from '../../components/pmo/CurrencyCell'
 import {
   ProjectCard,
   ProjectMonths,
-  ProjectRubrics,
+  ProjectIncurredCosts,
   ProjectValues,
   type ProjectMonth,
-  type RubricGroup,
 } from '../../components/pmo/ProjectCard'
 import { HealthBadge } from '../../components/pmo/HealthBadge'
 import type { PmoRole } from '../../components/pmo/navigation'
@@ -24,6 +24,39 @@ import { PMO_PROJETOS, type ProjetoMock } from '../../mocks/pmo'
 
 type ProjectsTab = 'projetos' | 'simulacao' | 'arquivados'
 type ViewMode = 'cards' | 'list'
+type SortOrder = 'created' | 'name-asc' | 'name-desc' | 'updated' | 'critical'
+
+const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
+  { value: 'created', label: 'Criação mais recente' },
+  { value: 'name-asc', label: 'Nome (A a Z)' },
+  { value: 'name-desc', label: 'Nome (Z a A)' },
+  { value: 'critical', label: 'Do mais crítico ao mais saudável' },
+]
+
+const EXAMPLE_FEE_RATE = 0.1
+const INCURRED_LIMIT_PERCENT = 20
+
+function isCritical(project: ProjetoMock): boolean {
+  const finalBalance = project.orcamento - project.gasto - project.gasto * EXAMPLE_FEE_RATE
+  return finalBalance < 0 || project.incorridosPercent >= INCURRED_LIMIT_PERCENT
+}
+
+/** Quanto maior, mais crítico: quem termina no vermelho vem antes de quem só se aproxima do teto. */
+function criticalityScore(project: ProjetoMock): number {
+  return (isCritical(project) ? 1000 : 0) + project.incorridosPercent
+}
+
+const SORT_COMPARATORS: Record<Exclude<SortOrder, 'created' | 'updated'>, (a: ProjetoMock, b: ProjetoMock) => number> = {
+  'name-asc': (a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'),
+  'name-desc': (a, b) => b.titulo.localeCompare(a.titulo, 'pt-BR'),
+  critical: (a, b) => criticalityScore(b) - criticalityScore(a),
+}
+
+/** "Criação mais recente" mantém a ordem recebida (a lista já chega da mais nova para a mais antiga). */
+function sortProjects(projects: ProjetoMock[], order: SortOrder): ProjetoMock[] {
+  if (order === 'created' || order === 'updated') return projects
+  return [...projects].sort(SORT_COMPARATORS[order])
+}
 
 export interface PmoProjectsPageProps {
   projetos?: ProjetoMock[]
@@ -35,7 +68,7 @@ export interface PmoProjectsPageProps {
 }
 
 const EMPTY_TEXT: Record<ProjectsTab, string> = {
-  projetos: 'Crie um projeto ou confira as abas Simulação e Arquivados.',
+  projetos: 'Crie um projeto ou confira as abas Em Planejamento e Arquivados.',
   simulacao: 'Nenhum projeto em planejamento.',
   arquivados: 'Nenhum projeto arquivado.',
 }
@@ -45,7 +78,6 @@ function progressOf(project: ProjetoMock): number {
 }
 
 const MONTH_ABBREVIATIONS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
-const EXAMPLE_FEE_RATE = 0.1
 
 /** "01/2026 a 12/2026" vira os meses do projeto; os primeiros, na proporção do que já foi gasto, aparecem como fechados. */
 function monthsOf(project: ProjetoMock): ProjectMonth[] {
@@ -60,26 +92,15 @@ function monthsOf(project: ProjetoMock): ProjectMonth[] {
   })
 }
 
-function rubricGroupsOf(project: ProjetoMock): RubricGroup[] {
-  const surplus = project.rubricas.filter((rubric) => rubric.executado > 0 && rubric.executado < rubric.previsto)
-  const overrun = project.rubricas.filter((rubric) => rubric.executado > rubric.previsto)
-  const idle = project.rubricas.filter((rubric) => rubric.executado === 0)
-  const sum = (values: number[]) => values.reduce((total, value) => total + value, 0)
-  return [
-    { key: 'surplus', label: 'com sobra', tone: 'success', rubrics: surplus.map((r) => ({ name: r.nome, value: r.previsto - r.executado })), total: sum(surplus.map((r) => r.previsto - r.executado)), totalLabel: 'sobra' },
-    { key: 'overrun', label: 'estouradas', tone: 'destructive', rubrics: overrun.map((r) => ({ name: r.nome, value: r.executado - r.previsto })), total: sum(overrun.map((r) => r.executado - r.previsto)), totalLabel: 'estouro' },
-    { key: 'idle', label: 'sem movimento', tone: 'neutral', rubrics: idle.map((r) => ({ name: r.nome, value: r.previsto })), total: sum(idle.map((r) => r.previsto)), totalLabel: 'previsto' },
-  ]
-}
-
 function ProjectCardExample({ project, onOpen }: { project: ProjetoMock; onOpen?: () => void }) {
   const fee = project.gasto * EXAMPLE_FEE_RATE
   const finalBalance = project.orcamento - project.gasto - fee
   return (
     <ProjectCard
       title={project.titulo}
-      status={project.status}
+      status={project.arquivado ? project.status : undefined}
       archived={project.arquivado}
+      critical={isCritical(project)}
       institute={project.instituto}
       manager={project.responsavel}
       onOpen={() => onOpen?.()}
@@ -87,14 +108,15 @@ function ProjectCardExample({ project, onOpen }: { project: ProjetoMock; onOpen?
     >
       <ProjectMonths months={monthsOf(project)} />
       <ProjectValues
-        cashBalance={project.orcamento - project.gasto}
         projectedFinalBalance={finalBalance}
         contractedContribution={project.orcamento}
-        totalRealized={project.gasto}
-        realizedPercent={progressOf(project)}
         instituteFee={fee}
       />
-      <ProjectRubrics groups={rubricGroupsOf(project)} />
+      <ProjectIncurredCosts
+        percent={project.incorridosPercent}
+        amount={(project.orcamento * project.incorridosPercent) / 100}
+        limitAmount={project.orcamento * 0.2}
+      />
     </ProjectCard>
   )
 }
@@ -134,7 +156,7 @@ function ProjectsTable({ projects, onOpen }: { projects: ProjetoMock[]; onOpen?:
   )
 }
 
-/** Lista de projetos: abas Projetos (em execução), Simulação (em planejamento) e Arquivados, em cartões ou em lista. */
+/** Lista de projetos: abas Em Execução, Em Planejamento e Arquivados, em cartões ou em lista. */
 export function PmoProjectsPage({
   projetos = PMO_PROJETOS,
   role = 'GESTOR',
@@ -145,11 +167,12 @@ export function PmoProjectsPage({
 }: PmoProjectsPageProps) {
   const [tab, setTab] = useState<ProjectsTab>(initialTab)
   const [view, setView] = useState<ViewMode>(initialView)
+  const [sortOrder, setSortOrder] = useState<SortOrder>('created')
   const inExecution = projetos.filter((project) => project.status === 'Execução' && !project.arquivado)
   const inPlanning = projetos.filter((project) => project.status === 'Planejamento' && !project.arquivado)
   const archived = projetos.filter((project) => project.arquivado)
   const byTab: Record<ProjectsTab, ProjetoMock[]> = { projetos: inExecution, simulacao: inPlanning, arquivados: archived }
-  const visible = byTab[tab]
+  const visible = sortProjects(byTab[tab], sortOrder)
   const canCreate = role !== 'LEITOR'
 
   return (
@@ -157,7 +180,7 @@ export function PmoProjectsPage({
       activeHref="/app/projetos"
       breadcrumb={[{ label: 'Projetos' }]}
       title="Projetos"
-      subtitle="Projetos em execução, em simulação e arquivados."
+      subtitle="Projetos em execução, em planejamento e arquivados."
       role={role}
       actions={
         canCreate && (
@@ -172,16 +195,18 @@ export function PmoProjectsPage({
         <Tabs value={tab} onValueChange={(value) => setTab(value as ProjectsTab)}>
           <TabsList variant="line" className="flex-wrap group-data-[orientation=horizontal]/tabs:h-auto">
             <TabsTrigger value="projetos">
-              Projetos <Badge variant="secondary">{inExecution.length}</Badge>
+              Em Execução <Badge variant="secondary">{inExecution.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="simulacao">
-              Simulação <Badge variant="secondary">{inPlanning.length}</Badge>
+              Em Planejamento <Badge variant="secondary">{inPlanning.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="arquivados">
               Arquivados <Badge variant="secondary">{archived.length}</Badge>
             </TabsTrigger>
           </TabsList>
         </Tabs>
+        <div className="flex items-center gap-2">
+        <SortMenu options={SORT_OPTIONS} value={sortOrder} onValueChange={setSortOrder} />
         <div className="flex gap-1" role="group" aria-label="Modo de visualização">
           <Button
             variant={view === 'cards' ? 'secondary' : 'ghost'}
@@ -201,6 +226,7 @@ export function PmoProjectsPage({
           >
             <IconList aria-hidden="true" />
           </Button>
+        </div>
         </div>
       </div>
 

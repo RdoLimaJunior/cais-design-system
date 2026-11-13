@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
-import { IconArchive, IconPencil } from '@tabler/icons-react'
+import { IconArchive } from '@tabler/icons-react'
 import { formatCurrency, formatPercent } from '../../lib/finance'
 import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { Skeleton } from '../ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { outcomeOf, type ProjectMoney, type ProjectOutcome } from './projectOutcome'
@@ -12,8 +12,8 @@ import { ProjectStatusBadge, type ProjectStatus } from './ProjectStatusBadge'
 
 /**
  * Ordem de leitura do card, de cima para baixo, cada parte separada por uma linha: cabeçalho (título, situação, instituto,
- * gestor e as ações) → Execução (meses) → Valores (os dois saldos que decidem e os que os explicam) → Rubricas (onde a
- * execução foge do plano).
+ * gestor e as ações) → Execução (meses) → Valores (o saldo que decide e os que o explicam) → Custos incorridos (quanto do
+ * teto de 20% já foi usado).
  */
 
 function SectionLabel({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
@@ -46,25 +46,18 @@ function describeOutcome(finalBalance: ProjectMoney, contracted: ProjectMoney): 
 const OUTCOME_TEXT: Record<ProjectOutcome, string> = { positive: 'text-success', negative: 'text-destructive' }
 
 export interface ProjectValuesProps {
-  /** Caixa disponível hoje. */
-  cashBalance: ProjectMoney
   /** Como o projeto termina: aporte contratado menos a estimativa ao término. */
   projectedFinalBalance: ProjectMoney
   contractedContribution: ProjectMoney
-  /** Realizado sem a taxa do instituto. */
-  totalRealized: ProjectMoney
-  /** Quanto o realizado representa do previsto, em %. */
-  realizedPercent?: number | null
   /** Taxa do instituto já repassada. */
   instituteFee: ProjectMoney
 }
 
-function MoneyRow({ label, value, note }: { label: string; value: ProjectMoney; note?: string }) {
+function MoneyRow({ label, value, hint }: { label: string; value: ProjectMoney; hint?: string }) {
   return (
     <div className="flex items-start justify-between gap-3">
-      <dt className="text-muted-foreground">
+      <dt className="text-muted-foreground" title={hint}>
         {label}
-        {note && <span className="block text-xs">{note}</span>}
       </dt>
       <dd className="shrink-0 text-right font-medium">
         <Money value={value} />
@@ -74,10 +67,9 @@ function MoneyRow({ label, value, note }: { label: string; value: ProjectMoney; 
 }
 
 /**
- * Dinheiro do projeto: primeiro os dois saldos que decidem (como termina e quanto há em caixa hoje), em destaque;
- * abaixo, os valores que os explicam.
+ * Dinheiro do projeto: primeiro o saldo que decide (como o projeto termina), em destaque; abaixo, os valores que o explicam.
  */
-export function ProjectValues({ cashBalance, projectedFinalBalance, contractedContribution, totalRealized, realizedPercent, instituteFee }: ProjectValuesProps) {
+export function ProjectValues({ projectedFinalBalance, contractedContribution, instituteFee }: ProjectValuesProps) {
   const outcome = outcomeOf(projectedFinalBalance)
   const outcomeText = outcome ? OUTCOME_TEXT[outcome] : undefined
   const description = describeOutcome(projectedFinalBalance, contractedContribution)
@@ -85,31 +77,21 @@ export function ProjectValues({ cashBalance, projectedFinalBalance, contractedCo
   return (
     <section data-slot="project-values">
       <SectionLabel>Valores</SectionLabel>
-      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">Saldo Final Projetado</p>
-          <div className="text-xl leading-tight font-semibold">
+      <div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">Saldo Final Projetado</p>
+            <p className={cn('min-h-4 text-xs', outcomeText)} title={description?.full}>
+              {description?.short}
+            </p>
+          </div>
+          <div className="shrink-0 text-xl leading-tight font-semibold">
             <Money value={projectedFinalBalance} className={outcomeText} />
           </div>
-          <p className={cn('min-h-4 text-xs', outcomeText)} title={description?.full}>
-            {description?.short}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">Saldo em Conta</p>
-          <div className="text-base font-semibold">
-            <Money value={cashBalance} />
-          </div>
-          <p className="min-h-4 text-xs text-muted-foreground">caixa disponível hoje</p>
         </div>
       </div>
-      <dl className="mt-4 space-y-1.5 text-sm">
+      <dl className="mt-4 space-y-2 rounded-md bg-muted/40 p-3 text-sm">
         <MoneyRow label="Aporte Contratado" value={contractedContribution} />
-        <MoneyRow
-          label="Total Realizado (sem taxa)"
-          value={totalRealized}
-          note={typeof realizedPercent === 'number' ? `${formatPercent(realizedPercent, 1)} do previsto` : undefined}
-        />
         <MoneyRow label="Taxa Instituto (Repasse)" value={instituteFee} />
       </dl>
     </section>
@@ -139,6 +121,8 @@ export interface ProjectMonthsProps {
   unavailable?: boolean
 }
 
+const MONTHS_GRID = 'flex flex-wrap gap-0.5'
+
 const MONTH_STYLES: Record<ProjectMonthState, string> = {
   closed: 'border-primary bg-primary text-primary-foreground',
   current: 'border-primary bg-background text-primary ring-2 ring-primary/30',
@@ -160,13 +144,13 @@ export function ProjectMonths({ months, loading = false, unavailable = false }: 
     <section data-slot="project-months">
       <SectionLabel aside={summary}>Execução</SectionLabel>
       {loading ? (
-        <div className="flex flex-wrap gap-0.5" aria-hidden="true">
+        <div className={MONTHS_GRID} aria-hidden="true">
           {months.map((month) => (
             <Skeleton key={month.number} className="h-6 w-7 rounded" />
           ))}
         </div>
       ) : (
-        <ol className="flex flex-wrap gap-0.5" aria-label={`Meses do projeto: ${closedCount} de ${months.length} fechados`}>
+        <ol className={MONTHS_GRID} aria-label={`Meses do projeto: ${closedCount} de ${months.length} fechados`}>
           {months.map((month) => {
             const detail = month.detail ?? MONTH_DEFAULT_DETAIL[month.state]
             return (
@@ -203,7 +187,7 @@ export type RubricTone = 'success' | 'destructive' | 'neutral'
 
 export interface RubricGroup {
   key: string
-  /** Texto depois da contagem: "com sobra", "estouradas", "sem movimento". */
+  /** Texto depois da contagem: "com sobra", "estouradas", "paradas". */
   label: string
   tone: RubricTone
   /** Rubricas do grupo com o valor que o grupo soma, mostradas no tooltip. */
@@ -219,7 +203,8 @@ export interface ProjectRubricsProps {
   unavailable?: boolean
 }
 
-const RUBRIC_BADGE_VARIANT = { success: 'success', destructive: 'destructive', neutral: 'secondary' } as const
+const RUBRIC_TONE_TEXT: Record<RubricTone, string> = { success: 'text-success', destructive: 'text-destructive', neutral: 'text-foreground' }
+const RUBRIC_TONE_DOT: Record<RubricTone, string> = { success: 'bg-success', destructive: 'bg-destructive', neutral: 'bg-foreground' }
 
 function RubricGroupDetail({ group }: { group: RubricGroup }) {
   if (group.rubrics.length === 0) return <p className="text-xs">Nenhuma rubrica neste grupo.</p>
@@ -240,8 +225,8 @@ function RubricGroupDetail({ group }: { group: RubricGroup }) {
 }
 
 /**
- * Rubricas com sobra, estouradas e sem movimento como selos; o detalhe de cada grupo aparece ao passar o mouse ou focar.
- * Os três selos ficam sempre nos mesmos lugares (mesmo com zero) para os cartões poderem ser comparados.
+ * Rubricas com sobra, estouradas e paradas em uma linha, cada um com um ponto colorido; o detalhe de cada grupo aparece ao passar o mouse ou focar.
+ * Os três itens aparecem sempre, mesmo com zero, na mesma ordem; em cartão estreito o último pode passar para a linha de baixo.
  */
 export function ProjectRubrics({ groups, loading = false, unavailable = false }: ProjectRubricsProps) {
   return (
@@ -256,25 +241,103 @@ export function ProjectRubrics({ groups, loading = false, unavailable = false }:
       ) : unavailable ? (
         <p className="text-xs text-muted-foreground">Não foi possível carregar as rubricas.</p>
       ) : (
-        <div className="flex flex-wrap gap-1.5">
-          {groups.map((group) => (
-            <Tooltip key={group.key}>
-              <TooltipTrigger asChild>
-                <Badge
-                  variant={group.rubrics.length > 0 ? RUBRIC_BADGE_VARIANT[group.tone] : 'outline'}
-                  tabIndex={0}
-                  aria-label={`${group.rubrics.length} ${group.label}. Passe o mouse ou foque para ver as rubricas.`}
-                  className="cursor-default"
-                >
-                  {group.rubrics.length} {group.label}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-sm">
-                <RubricGroupDetail group={group} />
-              </TooltipContent>
-            </Tooltip>
-          ))}
-        </div>
+        <ul className="flex flex-wrap gap-x-2 gap-y-1 text-xs">
+          {groups.map((group) => {
+            const isEmpty = group.rubrics.length === 0
+            return (
+              <li key={group.key}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={`${group.rubrics.length} ${group.label}. Passe o mouse ou foque para ver as rubricas.`}
+                      className="inline-flex cursor-default items-center gap-1 rounded-sm bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span aria-hidden="true" className={cn('size-2 rounded-full', isEmpty ? 'bg-muted-foreground/40' : RUBRIC_TONE_DOT[group.tone])} />
+                      <span className={cn('font-semibold tabular-nums', !isEmpty && RUBRIC_TONE_TEXT[group.tone])}>{group.rubrics.length}</span>
+                      <span className="text-muted-foreground">{group.label}</span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-sm">
+                    <RubricGroupDetail group={group} />
+                  </TooltipContent>
+                </Tooltip>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </section>
+  )
+}
+
+/* ------------------------------- Custos incorridos ------------------------------- */
+
+export interface ProjectIncurredCostsProps {
+  /** Custos incorridos em % da base de aportes. `null`: carregando; `undefined`: indisponível. */
+  percent: number | null | undefined
+  /** Teto de custos incorridos, em % (RN-EX03). */
+  limit?: number
+  /** Custos incorridos em reais. */
+  amount?: number
+  /** Quanto o teto permite gastar em reais (teto % da base de aportes). */
+  limitAmount?: number
+}
+
+/** A barra é o próprio limite: vazia em 0%, cheia ao chegar no teto. */
+function incurredFillWidth(percent: number, limit: number): number {
+  return limit > 0 ? Math.min(Math.max(percent / limit, 0), 1) * 100 : 100
+}
+
+/** Custos incorridos (taxa, fundo de reserva e custos administrativos) contra o teto do projeto: percentual, situação, barra do limite e valores. */
+export function ProjectIncurredCosts({ percent, limit = 20, amount, limitAmount }: ProjectIncurredCostsProps) {
+  if (percent === null) {
+    return (
+      <section data-slot="project-incurred-costs" aria-hidden="true">
+        <SectionLabel>Custos incorridos</SectionLabel>
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="mt-2 h-2 w-full rounded-full" />
+        <Skeleton className="mt-2 h-4 w-3/4" />
+      </section>
+    )
+  }
+
+  if (percent === undefined) {
+    return (
+      <section data-slot="project-incurred-costs">
+        <SectionLabel>Custos incorridos</SectionLabel>
+        <p className="text-xs text-muted-foreground">Não foi possível carregar os custos incorridos.</p>
+      </section>
+    )
+  }
+
+  const isReached = percent >= limit
+  const limitText = formatPercent(limit, 0)
+  const description = isReached ? `Limite de ${limitText} atingido` : `Dentro do limite de ${limitText}`
+  const hasAmounts = typeof amount === 'number' && typeof limitAmount === 'number'
+
+  return (
+    <section data-slot="project-incurred-costs">
+      <SectionLabel>Custos incorridos</SectionLabel>
+      <div className="flex items-center justify-between gap-3">
+        <p className={cn('text-lg leading-tight font-semibold tabular-nums', isReached && 'text-destructive')}>{formatPercent(percent, 1)}</p>
+        <Badge variant={isReached ? 'destructive' : 'success'}>{description}</Badge>
+      </div>
+      <div
+        role="meter"
+        aria-label="Custos incorridos"
+        aria-valuemin={0}
+        aria-valuemax={limit}
+        aria-valuenow={Math.min(percent, limit)}
+        aria-valuetext={`${formatPercent(percent, 1)} de ${limitText}. ${description}`}
+        className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"
+      >
+        <div className={cn('h-full rounded-full', isReached ? 'bg-destructive' : 'bg-success')} style={{ width: `${incurredFillWidth(percent, limit)}%` }} />
+      </div>
+      {hasAmounts && (
+        <p className="mt-1.5 text-xs text-muted-foreground tabular-nums">
+          {formatCurrency(amount)} de {formatCurrency(limitAmount)} permitidos
+        </p>
       )}
     </section>
   )
@@ -284,19 +347,66 @@ export function ProjectRubrics({ groups, loading = false, unavailable = false }:
 
 export interface ProjectCardProps {
   title: string
-  status: ProjectStatus
+  /** Opcional: nas listas já separadas por situação (em execução, em planejamento) o selo seria redundante. */
+  status?: ProjectStatus
   /** Projeto arquivado é somente leitura (RN-EX04). */
   archived?: boolean
+  /** Projeto crítico (por exemplo, déficit projetado ou teto de custos atingido): ganha um filete vermelho suave na esquerda. */
+  critical?: boolean
   institute: string
-  /** Gestor responsável; `null` mostra "Sem gestor atribuído". */
+  /** Gestor responsável; `null` mostra "Sem gestor". */
   manager?: string | null
+  /** Vigência do projeto já formatada, por exemplo "12 meses · jan/25 a dez/25". */
+  period?: string
+  /** Quantidade de colaboradores alocados. */
+  collaborators?: number
+  /** Quando passado, o número de colaboradores vira um botão (por exemplo, para abrir a equipe do projeto). */
+  onCollaboratorsClick?: () => void
+  /** Última atualização já formatada, por exemplo "10/11/2026". Aparece no rodapé do cartão. */
+  updatedAt?: string
+  /** Quem fez a última atualização; sem ele, o rodapé mostra só a data. */
+  updatedBy?: string | null
   onOpen: () => void
   /** Omitido quando o usuário não pode arquivar (ou o projeto já está arquivado): o botão some. */
   onArchive?: () => void
   archiving?: boolean
-  /** Seções do card, na ordem em que devem aparecer: `ProjectMonths`, `ProjectValues` e `ProjectRubrics`. */
+  /** Seções do card, na ordem em que devem aparecer: `ProjectMonths`, `ProjectValues` e `ProjectIncurredCosts`. */
   children?: ReactNode
   className?: string
+}
+
+/** Um dado do cabeçalho: rótulo pequeno em cima, valor embaixo. Sem valor, mostra o texto alternativo ou some. */
+function HeaderFact({
+  label,
+  value,
+  fallback,
+  onClick,
+  clickTitle,
+  className,
+}: {
+  label: string
+  value?: string
+  fallback?: string
+  onClick?: () => void
+  clickTitle?: string
+  className?: string
+}) {
+  const text = value ?? fallback
+  if (!text) return null
+  return (
+    <div className={cn('min-w-0', className)}>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={cn('truncate text-sm', value ? 'font-medium text-foreground' : 'text-muted-foreground')} title={text}>
+        {onClick && value ? (
+          <button type="button" onClick={onClick} title={clickTitle} className="rounded-sm text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            {text}
+          </button>
+        ) : (
+          text
+        )}
+      </dd>
+    </div>
+  )
 }
 
 function IconAction({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: ReactNode }) {
@@ -320,8 +430,14 @@ export function ProjectCard({
   title,
   status,
   archived = false,
+  critical = false,
   institute,
   manager,
+  period,
+  collaborators,
+  onCollaboratorsClick,
+  updatedAt,
+  updatedBy,
   onOpen,
   onArchive,
   archiving = false,
@@ -329,41 +445,57 @@ export function ProjectCard({
   className,
 }: ProjectCardProps) {
   return (
-    <Card data-slot="project-card" className={cn('gap-4', archived && 'bg-muted/40', className)}>
+    <Card
+      data-slot="project-card"
+      data-critical={critical || undefined}
+      className={cn('gap-4', archived && 'bg-muted/40', critical && 'border-l-4 border-l-destructive/60', className)}
+    >
       <CardHeader className="gap-1.5 border-b pb-4">
         <CardTitle className="leading-snug">
-          <button type="button" onClick={onOpen} className="line-clamp-2 text-left text-primary hover:underline">
+          <button type="button" onClick={onOpen} className="line-clamp-2 text-left text-primary">
             {title}
           </button>
         </CardTitle>
         <CardAction className="flex items-center">
-          <IconAction label="Editar projeto" onClick={onOpen}>
-            <IconPencil aria-hidden="true" />
-          </IconAction>
           {onArchive && !archived && (
             <IconAction label="Arquivar projeto" onClick={onArchive} disabled={archiving}>
               <IconArchive aria-hidden="true" />
             </IconAction>
           )}
         </CardAction>
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-          <ProjectStatusBadge status={status} archived={archived} />
-          <span>{institute}</span>
-          <span aria-hidden="true">·</span>
-          <span>
-            {manager ? (
-              <>
-                Gestor <span className="font-medium text-foreground">{manager}</span>
-              </>
-            ) : (
-              'Sem gestor atribuído'
-            )}
-          </span>
-        </div>
+        {(status || archived) && (
+          <div>
+            <ProjectStatusBadge status={status ?? 'Execução'} archived={archived} />
+          </div>
+        )}
+        <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+          <HeaderFact label="Instituto" value={institute} />
+          <HeaderFact label="Gestor" value={manager || undefined} fallback="Sem gestor" />
+          <HeaderFact label="Vigência" value={period} className="col-span-2" />
+          <HeaderFact
+            label="Colaboradores"
+            value={typeof collaborators === 'number' ? String(collaborators) : undefined}
+            onClick={onCollaboratorsClick}
+            clickTitle="Ver os colaboradores do projeto"
+          />
+        </dl>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col divide-y text-sm [&>*]:py-4 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
         {children}
       </CardContent>
+      {updatedAt && (
+        <CardFooter className="border-t pt-4 text-xs text-muted-foreground">
+          <p>
+            Atualizado em <span className="tabular-nums">{updatedAt}</span>
+            {updatedBy && (
+              <>
+                {' '}
+                por <span className="font-medium text-foreground">{updatedBy}</span>
+              </>
+            )}
+          </p>
+        </CardFooter>
+      )}
     </Card>
   )
 }
