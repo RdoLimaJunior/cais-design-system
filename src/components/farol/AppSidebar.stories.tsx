@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { AppLayout } from './AppLayout'
+import { IconHome, IconShoppingCart } from '@tabler/icons-react'
 import { AppSidebar } from './AppSidebar'
 
 const meta = {
@@ -30,6 +31,7 @@ const meta = {
           '| Clica em **Ativar alto contraste** | A página inteira passa para fundo preto, texto branco, títulos e botões principais em amarelo, bordas brancas e links sublinhados; o botão vira **Desativar alto contraste** |',
           '| Clica em um item com **páginas filhas** (por exemplo, Gestão de Pessoas) | A lista de filhas abre ou fecha; a seta mostra o estado (`aria-expanded`) e a escolha fica salva. Elas começam abertas |',
           '| A rota atual coincide com um item | O item fica em negrito e recebe `aria-current="page"` |',
+          '| Um submenu tem `isDisabled` | O item aparece esmaecido, sem link e com `aria-disabled`; serve para mostrar a estrutura antes de a página existir. Recolhido, um grupo só com itens desabilitados também não leva a lugar nenhum |',
           '| Está recolhido e há submenus (admin) | Os submenus não aparecem; o ícone leva ao primeiro submenu |',
           '| Clica em **Sair do Sistema** | Dispara `onLogout` (normalmente abre o modal de confirmação) |',
         ].join('\n'),
@@ -175,5 +177,28 @@ export const PaginasFilhasAbremEFecham: Story = {
     await expect(body.queryByRole('link', { name: 'Ver Todos os Colaboradores' })).toBeNull()
     await userEvent.click(toggle)
     await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  },
+}
+
+export const ItensDesabilitados: Story = {
+  args: {
+    variant: 'admin',
+    userName: 'Ana Ribeiro Costa',
+    navItems: [
+      { label: 'Home', icon: IconHome, href: '/home' },
+      {
+        label: 'Compras e Serviços',
+        icon: IconShoppingCart,
+        children: [
+          { label: 'Todas as solicitações', href: '/compras/solicitacoes', isDisabled: true },
+          { label: 'Fornecedores', href: '/compras/fornecedores', isDisabled: true },
+        ],
+      },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('link', { name: 'Todas as solicitações' })).not.toBeInTheDocument()
+    await expect(canvas.getByText('Todas as solicitações').closest('[aria-disabled="true"]')).toBeInTheDocument()
   },
 }

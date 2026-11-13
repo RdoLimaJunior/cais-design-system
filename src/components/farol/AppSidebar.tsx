@@ -32,6 +32,8 @@ const ICON_CLASSES = 'size-4 stroke-[1.6]'
 export interface SidebarSubitem {
   label: string
   href: string
+  /** Mostra o item sem permitir o clique (página ainda não existe). */
+  isDisabled?: boolean
 }
 
 export interface SidebarNavItem {
@@ -116,7 +118,7 @@ function AccessibilityButton({ label, icon: Icon, isCollapsed, isPressed, isDisa
 }
 
 function getItemHref(item: SidebarNavItem): string | undefined {
-  return item.href ?? item.children?.[0]?.href
+  return item.href ?? item.children?.find((child) => !child.isDisabled)?.href
 }
 
 function isItemActive(item: SidebarNavItem, activeHref: string): boolean {
@@ -139,7 +141,19 @@ function SidebarNavLink({ item, activeHref, isCollapsed }: { item: SidebarNavIte
     writeStoredValue(OPEN_SUBMENU_STORAGE_PREFIX + item.label, String(next))
   }
 
-  // Recolhido, só o ícone aparece e ele leva à primeira página filha.
+  // Recolhido, só o ícone aparece e ele leva à primeira página filha; sem nenhuma filha ativa, ele não leva a lugar nenhum.
+  if (hasChildren && isCollapsed && !getItemHref(item)) {
+    return (
+      <span
+        aria-disabled="true"
+        title={item.label}
+        className={cn(NAV_ITEM_CLASSES, 'cursor-not-allowed justify-center opacity-50 hover:bg-transparent')}
+      >
+        <Icon className={ICON_CLASSES} />
+      </span>
+    )
+  }
+
   if (!hasChildren || isCollapsed) {
     return (
       <a
@@ -172,6 +186,13 @@ function SidebarNavLink({ item, activeHref, isCollapsed }: { item: SidebarNavIte
       <div id={submenuId} hidden={!isOpen} className="ml-3 space-y-0.5 border-l border-zinc-950 pl-3">
         {item.children?.map((child) => {
           const isChildActive = child.href === activeHref
+          if (child.isDisabled) {
+            return (
+              <span key={child.href} aria-disabled="true" className={cn(NAV_ITEM_CLASSES, 'cursor-not-allowed opacity-50 hover:bg-transparent')}>
+                <span className="whitespace-nowrap">{child.label}</span>
+              </span>
+            )
+          }
           return (
             <a
               key={child.href}
