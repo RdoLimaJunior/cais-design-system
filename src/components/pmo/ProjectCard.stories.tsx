@@ -54,7 +54,7 @@ const GROUPS: RubricGroup[] = [
 const DESCRIPTION = [
   'Cartão de projeto da lista de Projetos. A moldura (`ProjectCard`) mostra quem é o projeto e as ações; o miolo é composto pelas seções `ProjectMonths`, `ProjectValues` e `ProjectRubrics`, que recebem os dados já prontos.',
   '',
-  '**Ordem de leitura (cada parte separada por uma linha):** cabeçalho (título em azul, situação, instituto, gestor, editar e arquivar) → Execução (meses) → Valores (saldo final projetado em destaque, depois os valores que o explicam) → Custos incorridos (percentual, situação e barra com o limite de 20%).',
+  '**Ordem de leitura (cada parte separada por uma linha):** cabeçalho (título em azul, arquivar, instituto, gestor, vigência e colaboradores) e rodapé com a última atualização → Execução (meses) → Valores (saldo final projetado em destaque, depois os valores que o explicam) → Custos incorridos (percentual, situação e barra com o limite de 20%).',
   '',
   '| Elemento | Regra |',
   '| --- | --- |',
@@ -65,7 +65,9 @@ const DESCRIPTION = [
   '| Custos incorridos | A barra é o limite: cheia ao chegar em 20%. Verde abaixo do teto, vermelho a partir dele; mostra também o valor em reais e quanto o teto permite |',
   '| `critical` | Filete vermelho suave na esquerda do cartão, para destacar projetos críticos na lista |',
   '| Colaboradores | Com `onCollaboratorsClick`, o número vira um botão que leva à equipe do projeto |',
-  '| Editar e Arquivar | Ícones no canto, com tooltip. O título também abre o projeto. Sem `onArchive`, o ícone de arquivar some |',
+  '| Abrir e Arquivar | O título abre o projeto. O ícone de arquivar fica no canto, com tooltip; sem `onArchive`, ele some |',
+  '| `status` | Opcional: o selo de situação só aparece quando passado (ou se o projeto está arquivado), porque as listas já separam execução e planejamento |',
+  '| Rodapé | `updatedAt` mostra a data da última atualização; com `updatedBy`, acrescenta "por" e o nome |',
 ].join('\n')
 
 const meta = {
@@ -105,7 +107,6 @@ function Sections({ loading = false, deficit = true }: { loading?: boolean; defi
       <ProjectValues
         projectedFinalBalance={finalBalance}
         contractedContribution={contracted}
-        totalRealized={loading ? null : 379_488.32}
         instituteFee={loading ? null : 42_809.21}
       />
       <ProjectIncurredCosts percent={loading ? null : 19.6} amount={19_600} limitAmount={20_000} />
@@ -129,7 +130,7 @@ export const Padrao: Story = {
     await expect(args.onCollaboratorsClick).toHaveBeenCalled()
     await expect(canvas.getByText('Saldo Final Projetado')).toBeInTheDocument()
     await expect(canvas.getByText(/déficit de 23,12%/)).toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: 'Editar projeto' }))
+    await userEvent.click(canvas.getByRole('button', { name: /PROJETO ENTERPRISE SPACE 2026|Projeto Enterprise Space 2026/i }))
     await expect(args.onOpen).toHaveBeenCalled()
     await userEvent.click(canvas.getByRole('button', { name: 'Arquivar projeto' }))
     await expect(args.onArchive).toHaveBeenCalled()
@@ -166,7 +167,7 @@ export const ValoresIndisponiveis: Story = {
   render: (args) => (
     <ProjectCard {...args}>
       <ProjectMonths months={MONTHS} unavailable />
-      <ProjectValues projectedFinalBalance={undefined} contractedContribution={undefined} totalRealized={undefined} instituteFee={undefined} />
+      <ProjectValues projectedFinalBalance={undefined} contractedContribution={undefined} instituteFee={undefined} />
       <ProjectIncurredCosts percent={undefined} />
     </ProjectCard>
   ),

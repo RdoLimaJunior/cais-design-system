@@ -37,7 +37,7 @@ export function SortMenu<T extends string>({ options, value, onValueChange, labe
           <span className="font-medium">{current?.label}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align="end" className="w-72">
         <DropdownMenuLabel>{label}</DropdownMenuLabel>
         <DropdownMenuRadioGroup value={value} onValueChange={(next) => onValueChange(next as T)}>
           {options.map((option) => (

@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert'
 import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
+import { SortMenu } from '../../components/ui/sort-menu'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
 import { CurrencyCell } from '../../components/pmo/CurrencyCell'
@@ -24,24 +24,38 @@ import { PMO_PROJETOS, type ProjetoMock } from '../../mocks/pmo'
 
 type ProjectsTab = 'projetos' | 'simulacao' | 'arquivados'
 type ViewMode = 'cards' | 'list'
-type SortOrder = 'default' | 'name-asc' | 'name-desc' | 'budget'
+type SortOrder = 'created' | 'name-asc' | 'name-desc' | 'updated' | 'critical'
 
 const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
-  { value: 'default', label: 'Ordem padrão' },
+  { value: 'created', label: 'Criação mais recente' },
   { value: 'name-asc', label: 'Nome (A a Z)' },
   { value: 'name-desc', label: 'Nome (Z a A)' },
-  { value: 'budget', label: 'Maior aporte' },
+  { value: 'critical', label: 'Do mais crítico ao mais saudável' },
 ]
 
-const SORT_COMPARATORS: Record<Exclude<SortOrder, 'default'>, (a: ProjetoMock, b: ProjetoMock) => number> = {
-  'name-asc': (a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'),
-  'name-desc': (a, b) => b.titulo.localeCompare(a.titulo, 'pt-BR'),
-  budget: (a, b) => b.orcamento - a.orcamento,
+const EXAMPLE_FEE_RATE = 0.1
+const INCURRED_LIMIT_PERCENT = 20
+
+function isCritical(project: ProjetoMock): boolean {
+  const finalBalance = project.orcamento - project.gasto - project.gasto * EXAMPLE_FEE_RATE
+  return finalBalance < 0 || project.incorridosPercent >= INCURRED_LIMIT_PERCENT
 }
 
-/** "Ordem padrão" mantém a ordem recebida. */
+/** Quanto maior, mais crítico: quem termina no vermelho vem antes de quem só se aproxima do teto. */
+function criticalityScore(project: ProjetoMock): number {
+  return (isCritical(project) ? 1000 : 0) + project.incorridosPercent
+}
+
+const SORT_COMPARATORS: Record<Exclude<SortOrder, 'created' | 'updated'>, (a: ProjetoMock, b: ProjetoMock) => number> = {
+  'name-asc': (a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'),
+  'name-desc': (a, b) => b.titulo.localeCompare(a.titulo, 'pt-BR'),
+  critical: (a, b) => criticalityScore(b) - criticalityScore(a),
+}
+
+/** "Criação mais recente" mantém a ordem recebida (a lista já chega da mais nova para a mais antiga). */
 function sortProjects(projects: ProjetoMock[], order: SortOrder): ProjetoMock[] {
-  return order === 'default' ? projects : [...projects].sort(SORT_COMPARATORS[order])
+  if (order === 'created' || order === 'updated') return projects
+  return [...projects].sort(SORT_COMPARATORS[order])
 }
 
 export interface PmoProjectsPageProps {
@@ -64,7 +78,6 @@ function progressOf(project: ProjetoMock): number {
 }
 
 const MONTH_ABBREVIATIONS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
-const EXAMPLE_FEE_RATE = 0.1
 
 /** "01/2026 a 12/2026" vira os meses do projeto; os primeiros, na proporção do que já foi gasto, aparecem como fechados. */
 function monthsOf(project: ProjetoMock): ProjectMonth[] {
@@ -85,9 +98,9 @@ function ProjectCardExample({ project, onOpen }: { project: ProjetoMock; onOpen?
   return (
     <ProjectCard
       title={project.titulo}
-      status={project.status}
+      status={project.arquivado ? project.status : undefined}
       archived={project.arquivado}
-      critical={finalBalance < 0 || project.incorridosPercent >= 20}
+      critical={isCritical(project)}
       institute={project.instituto}
       manager={project.responsavel}
       onOpen={() => onOpen?.()}
@@ -97,7 +110,6 @@ function ProjectCardExample({ project, onOpen }: { project: ProjetoMock; onOpen?
       <ProjectValues
         projectedFinalBalance={finalBalance}
         contractedContribution={project.orcamento}
-        totalRealized={project.gasto}
         instituteFee={fee}
       />
       <ProjectIncurredCosts
@@ -155,7 +167,7 @@ export function PmoProjectsPage({
 }: PmoProjectsPageProps) {
   const [tab, setTab] = useState<ProjectsTab>(initialTab)
   const [view, setView] = useState<ViewMode>(initialView)
-  const [sortOrder, setSortOrder] = useState<SortOrder>('default')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('created')
   const inExecution = projetos.filter((project) => project.status === 'Execução' && !project.arquivado)
   const inPlanning = projetos.filter((project) => project.status === 'Planejamento' && !project.arquivado)
   const archived = projetos.filter((project) => project.arquivado)
@@ -194,18 +206,7 @@ export function PmoProjectsPage({
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-2">
-        <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
-          <SelectTrigger className="w-56" aria-label="Ordenar projetos por">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SortMenu options={SORT_OPTIONS} value={sortOrder} onValueChange={setSortOrder} />
         <div className="flex gap-1" role="group" aria-label="Modo de visualização">
           <Button
             variant={view === 'cards' ? 'secondary' : 'ghost'}

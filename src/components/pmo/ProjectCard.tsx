@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
-import { IconArchive, IconPencil } from '@tabler/icons-react'
+import { IconArchive } from '@tabler/icons-react'
 import { formatCurrency, formatPercent } from '../../lib/finance'
 import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { Skeleton } from '../ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { outcomeOf, type ProjectMoney, type ProjectOutcome } from './projectOutcome'
@@ -49,8 +49,6 @@ export interface ProjectValuesProps {
   /** Como o projeto termina: aporte contratado menos a estimativa ao término. */
   projectedFinalBalance: ProjectMoney
   contractedContribution: ProjectMoney
-  /** Realizado sem a taxa do instituto. */
-  totalRealized: ProjectMoney
   /** Taxa do instituto já repassada. */
   instituteFee: ProjectMoney
 }
@@ -71,7 +69,7 @@ function MoneyRow({ label, value, hint }: { label: string; value: ProjectMoney; 
 /**
  * Dinheiro do projeto: primeiro o saldo que decide (como o projeto termina), em destaque; abaixo, os valores que o explicam.
  */
-export function ProjectValues({ projectedFinalBalance, contractedContribution, totalRealized, instituteFee }: ProjectValuesProps) {
+export function ProjectValues({ projectedFinalBalance, contractedContribution, instituteFee }: ProjectValuesProps) {
   const outcome = outcomeOf(projectedFinalBalance)
   const outcomeText = outcome ? OUTCOME_TEXT[outcome] : undefined
   const description = describeOutcome(projectedFinalBalance, contractedContribution)
@@ -94,7 +92,6 @@ export function ProjectValues({ projectedFinalBalance, contractedContribution, t
       </div>
       <dl className="mt-4 space-y-2 rounded-md bg-muted/40 p-3 text-sm">
         <MoneyRow label="Aporte Contratado" value={contractedContribution} />
-        <MoneyRow label="Total Realizado" value={totalRealized} hint="Sem a taxa do instituto" />
         <MoneyRow label="Taxa Instituto (Repasse)" value={instituteFee} />
       </dl>
     </section>
@@ -350,7 +347,8 @@ export function ProjectIncurredCosts({ percent, limit = 20, amount, limitAmount 
 
 export interface ProjectCardProps {
   title: string
-  status: ProjectStatus
+  /** Opcional: nas listas já separadas por situação (em execução, em planejamento) o selo seria redundante. */
+  status?: ProjectStatus
   /** Projeto arquivado é somente leitura (RN-EX04). */
   archived?: boolean
   /** Projeto crítico (por exemplo, déficit projetado ou teto de custos atingido): ganha um filete vermelho suave na esquerda. */
@@ -364,8 +362,10 @@ export interface ProjectCardProps {
   collaborators?: number
   /** Quando passado, o número de colaboradores vira um botão (por exemplo, para abrir a equipe do projeto). */
   onCollaboratorsClick?: () => void
-  /** Última atualização já formatada, por exemplo "10/11/2026". */
+  /** Última atualização já formatada, por exemplo "10/11/2026". Aparece no rodapé do cartão. */
   updatedAt?: string
+  /** Quem fez a última atualização; sem ele, o rodapé mostra só a data. */
+  updatedBy?: string | null
   onOpen: () => void
   /** Omitido quando o usuário não pode arquivar (ou o projeto já está arquivado): o botão some. */
   onArchive?: () => void
@@ -437,6 +437,7 @@ export function ProjectCard({
   collaborators,
   onCollaboratorsClick,
   updatedAt,
+  updatedBy,
   onOpen,
   onArchive,
   archiving = false,
@@ -456,34 +457,45 @@ export function ProjectCard({
           </button>
         </CardTitle>
         <CardAction className="flex items-center">
-          <IconAction label="Editar projeto" onClick={onOpen}>
-            <IconPencil aria-hidden="true" />
-          </IconAction>
           {onArchive && !archived && (
             <IconAction label="Arquivar projeto" onClick={onArchive} disabled={archiving}>
               <IconArchive aria-hidden="true" />
             </IconAction>
           )}
         </CardAction>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <ProjectStatusBadge status={status} archived={archived} />
-          <span>{institute}</span>
-        </div>
+        {(status || archived) && (
+          <div>
+            <ProjectStatusBadge status={status ?? 'Execução'} archived={archived} />
+          </div>
+        )}
         <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+          <HeaderFact label="Instituto" value={institute} />
           <HeaderFact label="Gestor" value={manager || undefined} fallback="Sem gestor" />
+          <HeaderFact label="Vigência" value={period} className="col-span-2" />
           <HeaderFact
             label="Colaboradores"
             value={typeof collaborators === 'number' ? String(collaborators) : undefined}
             onClick={onCollaboratorsClick}
             clickTitle="Ver os colaboradores do projeto"
           />
-          <HeaderFact label="Vigência" value={period} className="col-span-2" />
-          {updatedAt && <p className="col-span-2 text-muted-foreground">Atualizado em {updatedAt}</p>}
         </dl>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col divide-y text-sm [&>*]:py-4 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
         {children}
       </CardContent>
+      {updatedAt && (
+        <CardFooter className="border-t pt-4 text-xs text-muted-foreground">
+          <p>
+            Atualizado em <span className="tabular-nums">{updatedAt}</span>
+            {updatedBy && (
+              <>
+                {' '}
+                por <span className="font-medium text-foreground">{updatedBy}</span>
+              </>
+            )}
+          </p>
+        </CardFooter>
+      )}
     </Card>
   )
 }
