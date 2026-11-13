@@ -19,7 +19,7 @@ const meta = {
           '| --- | --- |',
           '| O conteúdo é curto | O card ainda assim chega à base da janela e o rodapé fica embaixo |',
           '| Não há `footer` | O card não mostra a faixa de rodapé |',
-          '| Há `badges` | Os selos aparecem ao lado do título, na mesma linha (quebram para baixo se faltar espaço) |',
+          '| Há `badges` | Os selos aparecem na linha abaixo do título, antes do subtítulo, sem disputar espaço com o nome |',
           '| Há `actions` | Os botões principais ficam à direita do título; no celular, abaixo dele |',
           '| O rodapé tem **Editar** (`EditFooterLink`) | É um link de contorno azul com ícone de lápis; no hover, fundo `#e8f5ff` |',
         ].join('\n'),

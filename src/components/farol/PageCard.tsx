@@ -4,7 +4,7 @@ import { PageTitle } from './PageHeading'
 export interface PageCardProps {
   title: string
   subtitle?: string
-  /** Selos de situação ao lado do título (por exemplo, status do projeto), para não gastar uma linha do corpo. */
+  /** Selos de situação (por exemplo, status do projeto), na linha abaixo do título, antes do subtítulo. */
   badges?: ReactNode
   footer?: ReactNode
   /** Botões principais da página, à direita do título (abaixo dele no celular). */
@@ -29,12 +29,14 @@ export function PageCard({
   return (
     <article className="flex min-h-[calc(100dvh-72px)] flex-col overflow-clip rounded bg-white shadow-sm">
       <header className="flex flex-col gap-3 border-b border-zinc-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <PageTitle>{title}</PageTitle>
-            {badges}
-          </div>
-          {subtitle && <p className="mt-1 text-sm leading-5 font-normal text-zinc-500">{subtitle}</p>}
+        <div className="min-w-0">
+          <PageTitle>{title}</PageTitle>
+          {(badges || subtitle) && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+              {badges}
+              {subtitle && <p className="text-sm leading-5 font-normal text-zinc-500">{subtitle}</p>}
+            </div>
+          )}
         </div>
         {actions && <div className="flex flex-col gap-2 max-sm:[&>[data-slot=button]]:h-auto max-sm:[&>[data-slot=button]]:min-h-8 max-sm:[&>[data-slot=button]]:whitespace-normal sm:flex-row sm:flex-wrap sm:justify-end">{actions}</div>}
       </header>
