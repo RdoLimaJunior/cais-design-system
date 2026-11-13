@@ -29,7 +29,7 @@ export function PageCard({
   return (
     <article className="flex min-h-[calc(100dvh-72px)] flex-col overflow-clip rounded bg-white shadow-sm">
       <header className="flex flex-col gap-3 border-b border-zinc-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
+        <div className="min-w-0 sm:flex-1">
           <PageTitle>{title}</PageTitle>
           {(badges || subtitle) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -38,7 +38,7 @@ export function PageCard({
             </div>
           )}
         </div>
-        {actions && <div className="flex flex-col gap-2 max-sm:[&>[data-slot=button]]:h-auto max-sm:[&>[data-slot=button]]:min-h-8 max-sm:[&>[data-slot=button]]:whitespace-normal sm:flex-row sm:flex-wrap sm:justify-end">{actions}</div>}
+        {actions && <div className="flex flex-col gap-2 max-sm:[&>[data-slot=button]]:h-auto max-sm:[&>[data-slot=button]]:min-h-8 max-sm:[&>[data-slot=button]]:whitespace-normal sm:shrink-0 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">{actions}</div>}
       </header>
       <div className={bodyClassName}>{children}</div>
       {footer && <footer className="mt-auto flex justify-end border-t border-zinc-100 px-5 py-4">{footer}</footer>}
