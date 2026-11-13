@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { IconArchive, IconPencil } from '@tabler/icons-react'
 import { formatCurrency, formatPercent } from '../../lib/finance'
 import { cn } from '../../lib/utils'
+import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Skeleton } from '../ui/skeleton'
@@ -11,8 +12,8 @@ import { ProjectStatusBadge, type ProjectStatus } from './ProjectStatusBadge'
 
 /**
  * Ordem de leitura do card, de cima para baixo, cada parte separada por uma linha: cabeçalho (título, situação, instituto,
- * gestor e as ações) → Execução (meses) → Valores (os dois saldos que decidem e os que os explicam) → Rubricas (onde a
- * execução foge do plano).
+ * gestor e as ações) → Execução (meses) → Valores (o saldo que decide e os que o explicam) → Custos incorridos (quanto do
+ * teto de 20% já foi usado).
  */
 
 function SectionLabel({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
@@ -45,25 +46,20 @@ function describeOutcome(finalBalance: ProjectMoney, contracted: ProjectMoney): 
 const OUTCOME_TEXT: Record<ProjectOutcome, string> = { positive: 'text-success', negative: 'text-destructive' }
 
 export interface ProjectValuesProps {
-  /** Caixa disponível hoje. */
-  cashBalance: ProjectMoney
   /** Como o projeto termina: aporte contratado menos a estimativa ao término. */
   projectedFinalBalance: ProjectMoney
   contractedContribution: ProjectMoney
   /** Realizado sem a taxa do instituto. */
   totalRealized: ProjectMoney
-  /** Quanto o realizado representa do previsto, em %. */
-  realizedPercent?: number | null
   /** Taxa do instituto já repassada. */
   instituteFee: ProjectMoney
 }
 
-function MoneyRow({ label, value, note }: { label: string; value: ProjectMoney; note?: string }) {
+function MoneyRow({ label, value, hint }: { label: string; value: ProjectMoney; hint?: string }) {
   return (
     <div className="flex items-start justify-between gap-3">
-      <dt className="text-muted-foreground">
+      <dt className="text-muted-foreground" title={hint}>
         {label}
-        {note && <span className="block text-xs">{note}</span>}
       </dt>
       <dd className="shrink-0 text-right font-medium">
         <Money value={value} />
@@ -73,10 +69,9 @@ function MoneyRow({ label, value, note }: { label: string; value: ProjectMoney; 
 }
 
 /**
- * Dinheiro do projeto: primeiro os dois saldos que decidem (como termina e quanto há em caixa hoje), em destaque;
- * abaixo, os valores que os explicam.
+ * Dinheiro do projeto: primeiro o saldo que decide (como o projeto termina), em destaque; abaixo, os valores que o explicam.
  */
-export function ProjectValues({ cashBalance, projectedFinalBalance, contractedContribution, totalRealized, realizedPercent, instituteFee }: ProjectValuesProps) {
+export function ProjectValues({ projectedFinalBalance, contractedContribution, totalRealized, instituteFee }: ProjectValuesProps) {
   const outcome = outcomeOf(projectedFinalBalance)
   const outcomeText = outcome ? OUTCOME_TEXT[outcome] : undefined
   const description = describeOutcome(projectedFinalBalance, contractedContribution)
@@ -84,7 +79,7 @@ export function ProjectValues({ cashBalance, projectedFinalBalance, contractedCo
   return (
     <section data-slot="project-values">
       <SectionLabel>Valores</SectionLabel>
-      <div className="space-y-3">
+      <div>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">Saldo Final Projetado</p>
@@ -96,23 +91,10 @@ export function ProjectValues({ cashBalance, projectedFinalBalance, contractedCo
             <Money value={projectedFinalBalance} className={outcomeText} />
           </div>
         </div>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">Saldo em Conta</p>
-            <p className="min-h-4 text-xs text-muted-foreground">caixa disponível hoje</p>
-          </div>
-          <div className="shrink-0 text-xl leading-tight font-semibold">
-            <Money value={cashBalance} />
-          </div>
-        </div>
       </div>
       <dl className="mt-4 space-y-2 rounded-md bg-muted/40 p-3 text-sm">
         <MoneyRow label="Aporte Contratado" value={contractedContribution} />
-        <MoneyRow
-          label="Total Realizado"
-          value={totalRealized}
-          note={typeof realizedPercent === 'number' ? `sem taxa · ${formatPercent(realizedPercent, 1)} do previsto` : 'sem taxa'}
-        />
+        <MoneyRow label="Total Realizado" value={totalRealized} hint="Sem a taxa do instituto" />
         <MoneyRow label="Taxa Instituto (Repasse)" value={instituteFee} />
       </dl>
     </section>
@@ -292,6 +274,78 @@ export function ProjectRubrics({ groups, loading = false, unavailable = false }:
   )
 }
 
+/* ------------------------------- Custos incorridos ------------------------------- */
+
+export interface ProjectIncurredCostsProps {
+  /** Custos incorridos em % da base de aportes. `null`: carregando; `undefined`: indisponível. */
+  percent: number | null | undefined
+  /** Teto de custos incorridos, em % (RN-EX03). */
+  limit?: number
+  /** Custos incorridos em reais. */
+  amount?: number
+  /** Quanto o teto permite gastar em reais (teto % da base de aportes). */
+  limitAmount?: number
+}
+
+/** A barra é o próprio limite: vazia em 0%, cheia ao chegar no teto. */
+function incurredFillWidth(percent: number, limit: number): number {
+  return limit > 0 ? Math.min(Math.max(percent / limit, 0), 1) * 100 : 100
+}
+
+/** Custos incorridos (taxa, fundo de reserva e custos administrativos) contra o teto do projeto: percentual, situação, barra do limite e valores. */
+export function ProjectIncurredCosts({ percent, limit = 20, amount, limitAmount }: ProjectIncurredCostsProps) {
+  if (percent === null) {
+    return (
+      <section data-slot="project-incurred-costs" aria-hidden="true">
+        <SectionLabel>Custos incorridos</SectionLabel>
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="mt-2 h-2 w-full rounded-full" />
+        <Skeleton className="mt-2 h-4 w-3/4" />
+      </section>
+    )
+  }
+
+  if (percent === undefined) {
+    return (
+      <section data-slot="project-incurred-costs">
+        <SectionLabel>Custos incorridos</SectionLabel>
+        <p className="text-xs text-muted-foreground">Não foi possível carregar os custos incorridos.</p>
+      </section>
+    )
+  }
+
+  const isReached = percent >= limit
+  const limitText = formatPercent(limit, 0)
+  const description = isReached ? `Limite de ${limitText} atingido` : `Dentro do limite de ${limitText}`
+  const hasAmounts = typeof amount === 'number' && typeof limitAmount === 'number'
+
+  return (
+    <section data-slot="project-incurred-costs">
+      <SectionLabel>Custos incorridos</SectionLabel>
+      <div className="flex items-center justify-between gap-3">
+        <p className={cn('text-lg leading-tight font-semibold tabular-nums', isReached && 'text-destructive')}>{formatPercent(percent, 1)}</p>
+        <Badge variant={isReached ? 'destructive' : 'success'}>{description}</Badge>
+      </div>
+      <div
+        role="meter"
+        aria-label="Custos incorridos"
+        aria-valuemin={0}
+        aria-valuemax={limit}
+        aria-valuenow={Math.min(percent, limit)}
+        aria-valuetext={`${formatPercent(percent, 1)} de ${limitText}. ${description}`}
+        className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"
+      >
+        <div className={cn('h-full rounded-full', isReached ? 'bg-destructive' : 'bg-success')} style={{ width: `${incurredFillWidth(percent, limit)}%` }} />
+      </div>
+      {hasAmounts && (
+        <p className="mt-1.5 text-xs text-muted-foreground tabular-nums">
+          {formatCurrency(amount)} de {formatCurrency(limitAmount)} permitidos
+        </p>
+      )}
+    </section>
+  )
+}
+
 /* ------------------------------------- Cartão ------------------------------------- */
 
 export interface ProjectCardProps {
@@ -299,33 +353,57 @@ export interface ProjectCardProps {
   status: ProjectStatus
   /** Projeto arquivado é somente leitura (RN-EX04). */
   archived?: boolean
+  /** Projeto crítico (por exemplo, déficit projetado ou teto de custos atingido): ganha um filete vermelho suave na esquerda. */
+  critical?: boolean
   institute: string
   /** Gestor responsável; `null` mostra "Sem gestor". */
   manager?: string | null
-  /** Período do projeto já formatado, por exemplo "jan/25 – dez/26". */
+  /** Vigência do projeto já formatada, por exemplo "12 meses · jan/25 a dez/25". */
   period?: string
   /** Quantidade de colaboradores alocados. */
   collaborators?: number
+  /** Quando passado, o número de colaboradores vira um botão (por exemplo, para abrir a equipe do projeto). */
+  onCollaboratorsClick?: () => void
   /** Última atualização já formatada, por exemplo "10/11/2026". */
   updatedAt?: string
   onOpen: () => void
   /** Omitido quando o usuário não pode arquivar (ou o projeto já está arquivado): o botão some. */
   onArchive?: () => void
   archiving?: boolean
-  /** Seções do card, na ordem em que devem aparecer: `ProjectMonths`, `ProjectValues` e `ProjectRubrics`. */
+  /** Seções do card, na ordem em que devem aparecer: `ProjectMonths`, `ProjectValues` e `ProjectIncurredCosts`. */
   children?: ReactNode
   className?: string
 }
 
 /** Um dado do cabeçalho: rótulo pequeno em cima, valor embaixo. Sem valor, mostra o texto alternativo ou some. */
-function HeaderFact({ label, value, fallback }: { label: string; value?: string; fallback?: string }) {
+function HeaderFact({
+  label,
+  value,
+  fallback,
+  onClick,
+  clickTitle,
+  className,
+}: {
+  label: string
+  value?: string
+  fallback?: string
+  onClick?: () => void
+  clickTitle?: string
+  className?: string
+}) {
   const text = value ?? fallback
   if (!text) return null
   return (
-    <div className="min-w-0">
+    <div className={cn('min-w-0', className)}>
       <dt className="text-muted-foreground">{label}</dt>
       <dd className={cn('truncate text-sm', value ? 'font-medium text-foreground' : 'text-muted-foreground')} title={text}>
-        {text}
+        {onClick && value ? (
+          <button type="button" onClick={onClick} title={clickTitle} className="rounded-sm text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            {text}
+          </button>
+        ) : (
+          text
+        )}
       </dd>
     </div>
   )
@@ -352,10 +430,12 @@ export function ProjectCard({
   title,
   status,
   archived = false,
+  critical = false,
   institute,
   manager,
   period,
   collaborators,
+  onCollaboratorsClick,
   updatedAt,
   onOpen,
   onArchive,
@@ -364,7 +444,11 @@ export function ProjectCard({
   className,
 }: ProjectCardProps) {
   return (
-    <Card data-slot="project-card" className={cn('gap-4', archived && 'bg-muted/40', className)}>
+    <Card
+      data-slot="project-card"
+      data-critical={critical || undefined}
+      className={cn('gap-4', archived && 'bg-muted/40', critical && 'border-l-4 border-l-destructive/60', className)}
+    >
       <CardHeader className="gap-1.5 border-b pb-4">
         <CardTitle className="leading-snug">
           <button type="button" onClick={onOpen} className="line-clamp-2 text-left text-primary">
@@ -387,9 +471,14 @@ export function ProjectCard({
         </div>
         <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
           <HeaderFact label="Gestor" value={manager || undefined} fallback="Sem gestor" />
-          <HeaderFact label="Período" value={period} />
-          <HeaderFact label="Colaboradores" value={typeof collaborators === 'number' ? String(collaborators) : undefined} />
-          <HeaderFact label="Atualizado em" value={updatedAt} />
+          <HeaderFact
+            label="Colaboradores"
+            value={typeof collaborators === 'number' ? String(collaborators) : undefined}
+            onClick={onCollaboratorsClick}
+            clickTitle="Ver os colaboradores do projeto"
+          />
+          <HeaderFact label="Vigência" value={period} className="col-span-2" />
+          {updatedAt && <p className="col-span-2 text-muted-foreground">Atualizado em {updatedAt}</p>}
         </dl>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col divide-y text-sm [&>*]:py-4 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">

@@ -152,11 +152,13 @@ export { type ProjectMoney } from './components/pmo/projectOutcome'
 export {
   ProjectCard,
   ProjectMonths,
+  ProjectIncurredCosts,
   ProjectRubrics,
   ProjectValues,
   type ProjectCardProps,
   type ProjectMonth,
   type ProjectMonthsProps,
+  type ProjectIncurredCostsProps,
   type ProjectRubricsProps,
   type ProjectValuesProps,
   type RubricGroup,

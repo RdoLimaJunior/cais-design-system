@@ -4,16 +4,16 @@ import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert'
 import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
 import { CurrencyCell } from '../../components/pmo/CurrencyCell'
 import {
   ProjectCard,
   ProjectMonths,
-  ProjectRubrics,
+  ProjectIncurredCosts,
   ProjectValues,
   type ProjectMonth,
-  type RubricGroup,
 } from '../../components/pmo/ProjectCard'
 import { HealthBadge } from '../../components/pmo/HealthBadge'
 import type { PmoRole } from '../../components/pmo/navigation'
@@ -24,6 +24,25 @@ import { PMO_PROJETOS, type ProjetoMock } from '../../mocks/pmo'
 
 type ProjectsTab = 'projetos' | 'simulacao' | 'arquivados'
 type ViewMode = 'cards' | 'list'
+type SortOrder = 'default' | 'name-asc' | 'name-desc' | 'budget'
+
+const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
+  { value: 'default', label: 'Ordem padrão' },
+  { value: 'name-asc', label: 'Nome (A a Z)' },
+  { value: 'name-desc', label: 'Nome (Z a A)' },
+  { value: 'budget', label: 'Maior aporte' },
+]
+
+const SORT_COMPARATORS: Record<Exclude<SortOrder, 'default'>, (a: ProjetoMock, b: ProjetoMock) => number> = {
+  'name-asc': (a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'),
+  'name-desc': (a, b) => b.titulo.localeCompare(a.titulo, 'pt-BR'),
+  budget: (a, b) => b.orcamento - a.orcamento,
+}
+
+/** "Ordem padrão" mantém a ordem recebida. */
+function sortProjects(projects: ProjetoMock[], order: SortOrder): ProjetoMock[] {
+  return order === 'default' ? projects : [...projects].sort(SORT_COMPARATORS[order])
+}
 
 export interface PmoProjectsPageProps {
   projetos?: ProjetoMock[]
@@ -60,18 +79,6 @@ function monthsOf(project: ProjetoMock): ProjectMonth[] {
   })
 }
 
-function rubricGroupsOf(project: ProjetoMock): RubricGroup[] {
-  const surplus = project.rubricas.filter((rubric) => rubric.executado > 0 && rubric.executado < rubric.previsto)
-  const overrun = project.rubricas.filter((rubric) => rubric.executado > rubric.previsto)
-  const idle = project.rubricas.filter((rubric) => rubric.executado === 0)
-  const sum = (values: number[]) => values.reduce((total, value) => total + value, 0)
-  return [
-    { key: 'surplus', label: 'com sobra', tone: 'success', rubrics: surplus.map((r) => ({ name: r.nome, value: r.previsto - r.executado })), total: sum(surplus.map((r) => r.previsto - r.executado)), totalLabel: 'sobra' },
-    { key: 'overrun', label: 'estouradas', tone: 'destructive', rubrics: overrun.map((r) => ({ name: r.nome, value: r.executado - r.previsto })), total: sum(overrun.map((r) => r.executado - r.previsto)), totalLabel: 'estouro' },
-    { key: 'idle', label: 'paradas', tone: 'neutral', rubrics: idle.map((r) => ({ name: r.nome, value: r.previsto })), total: sum(idle.map((r) => r.previsto)), totalLabel: 'previsto' },
-  ]
-}
-
 function ProjectCardExample({ project, onOpen }: { project: ProjetoMock; onOpen?: () => void }) {
   const fee = project.gasto * EXAMPLE_FEE_RATE
   const finalBalance = project.orcamento - project.gasto - fee
@@ -80,6 +87,7 @@ function ProjectCardExample({ project, onOpen }: { project: ProjetoMock; onOpen?
       title={project.titulo}
       status={project.status}
       archived={project.arquivado}
+      critical={finalBalance < 0 || project.incorridosPercent >= 20}
       institute={project.instituto}
       manager={project.responsavel}
       onOpen={() => onOpen?.()}
@@ -87,14 +95,16 @@ function ProjectCardExample({ project, onOpen }: { project: ProjetoMock; onOpen?
     >
       <ProjectMonths months={monthsOf(project)} />
       <ProjectValues
-        cashBalance={project.orcamento - project.gasto}
         projectedFinalBalance={finalBalance}
         contractedContribution={project.orcamento}
         totalRealized={project.gasto}
-        realizedPercent={progressOf(project)}
         instituteFee={fee}
       />
-      <ProjectRubrics groups={rubricGroupsOf(project)} />
+      <ProjectIncurredCosts
+        percent={project.incorridosPercent}
+        amount={(project.orcamento * project.incorridosPercent) / 100}
+        limitAmount={project.orcamento * 0.2}
+      />
     </ProjectCard>
   )
 }
@@ -145,11 +155,12 @@ export function PmoProjectsPage({
 }: PmoProjectsPageProps) {
   const [tab, setTab] = useState<ProjectsTab>(initialTab)
   const [view, setView] = useState<ViewMode>(initialView)
+  const [sortOrder, setSortOrder] = useState<SortOrder>('default')
   const inExecution = projetos.filter((project) => project.status === 'Execução' && !project.arquivado)
   const inPlanning = projetos.filter((project) => project.status === 'Planejamento' && !project.arquivado)
   const archived = projetos.filter((project) => project.arquivado)
   const byTab: Record<ProjectsTab, ProjetoMock[]> = { projetos: inExecution, simulacao: inPlanning, arquivados: archived }
-  const visible = byTab[tab]
+  const visible = sortProjects(byTab[tab], sortOrder)
   const canCreate = role !== 'LEITOR'
 
   return (
@@ -182,6 +193,19 @@ export function PmoProjectsPage({
             </TabsTrigger>
           </TabsList>
         </Tabs>
+        <div className="flex items-center gap-2">
+        <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
+          <SelectTrigger className="w-56" aria-label="Ordenar projetos por">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <div className="flex gap-1" role="group" aria-label="Modo de visualização">
           <Button
             variant={view === 'cards' ? 'secondary' : 'ghost'}
@@ -201,6 +225,7 @@ export function PmoProjectsPage({
           >
             <IconList aria-hidden="true" />
           </Button>
+        </div>
         </div>
       </div>
 

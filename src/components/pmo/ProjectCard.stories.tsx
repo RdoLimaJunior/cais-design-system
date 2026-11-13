@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import {
   ProjectCard,
+  ProjectIncurredCosts,
   ProjectMonths,
   ProjectRubrics,
   ProjectValues,
@@ -53,7 +54,7 @@ const GROUPS: RubricGroup[] = [
 const DESCRIPTION = [
   'Cartão de projeto da lista de Projetos. A moldura (`ProjectCard`) mostra quem é o projeto e as ações; o miolo é composto pelas seções `ProjectMonths`, `ProjectValues` e `ProjectRubrics`, que recebem os dados já prontos.',
   '',
-  '**Ordem de leitura (cada parte separada por uma linha):** cabeçalho (título em azul, situação, instituto, gestor, editar e arquivar) → Execução (meses) → Valores (saldo final projetado e saldo em conta em destaque, depois os valores que os explicam) → Rubricas.',
+  '**Ordem de leitura (cada parte separada por uma linha):** cabeçalho (título em azul, situação, instituto, gestor, editar e arquivar) → Execução (meses) → Valores (saldo final projetado em destaque, depois os valores que o explicam) → Custos incorridos (percentual, situação e barra com o limite de 20%).',
   '',
   '| Elemento | Regra |',
   '| --- | --- |',
@@ -61,7 +62,9 @@ const DESCRIPTION = [
   '| Quadradinho de mês | Cheio: mês com fechamento feito. Contorno azul: mês atual ainda aberto. Vazio: os demais |',
   '| Valor `null` | Ainda carregando: mostra um espaço cinza do tamanho do valor |',
   '| Valor `undefined` | Indisponível (consulta falhou ou o perfil não acessa): mostra "—" |',
-  '| Selos de rubricas | Ficam sempre nos mesmos lugares, mesmo com zero; o tooltip lista as rubricas do grupo |',
+  '| Custos incorridos | A barra é o limite: cheia ao chegar em 20%. Verde abaixo do teto, vermelho a partir dele; mostra também o valor em reais e quanto o teto permite |',
+  '| `critical` | Filete vermelho suave na esquerda do cartão, para destacar projetos críticos na lista |',
+  '| Colaboradores | Com `onCollaboratorsClick`, o número vira um botão que leva à equipe do projeto |',
   '| Editar e Arquivar | Ícones no canto, com tooltip. O título também abre o projeto. Sem `onArchive`, o ícone de arquivar some |',
 ].join('\n')
 
@@ -74,8 +77,9 @@ const meta = {
     status: 'Execução',
     institute: 'CAIS',
     manager: 'Ana Gestora',
-    period: 'jan/25 – dez/25',
+    period: '12 meses · abr/26 a mar/27',
     collaborators: 12,
+    onCollaboratorsClick: fn(),
     updatedAt: '10/11/2026',
     onOpen: fn(),
     onArchive: fn(),
@@ -99,14 +103,12 @@ function Sections({ loading = false, deficit = true }: { loading?: boolean; defi
     <>
       <ProjectMonths months={MONTHS} loading={loading} />
       <ProjectValues
-        cashBalance={loading ? null : 385_282.88}
         projectedFinalBalance={finalBalance}
         contractedContribution={contracted}
         totalRealized={loading ? null : 379_488.32}
-        realizedPercent={98.4}
         instituteFee={loading ? null : 42_809.21}
       />
-      <ProjectRubrics groups={GROUPS} loading={loading} />
+      <ProjectIncurredCosts percent={loading ? null : 19.6} amount={19_600} limitAmount={20_000} />
     </>
   )
 }
@@ -120,7 +122,11 @@ export const Padrao: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('2 de 12 meses fechados')).toBeInTheDocument()
-    await expect(canvas.getByText('jan/25 – dez/25')).toBeInTheDocument()
+    await expect(canvas.getByText('12 meses · abr/26 a mar/27')).toBeInTheDocument()
+    await expect(canvas.getByText('Dentro do limite de 20%')).toBeInTheDocument()
+    await expect(canvas.getByText(/permitidos/)).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: '12' }))
+    await expect(args.onCollaboratorsClick).toHaveBeenCalled()
     await expect(canvas.getByText('Saldo Final Projetado')).toBeInTheDocument()
     await expect(canvas.getByText(/déficit de 23,12%/)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: 'Editar projeto' }))
@@ -160,21 +166,46 @@ export const ValoresIndisponiveis: Story = {
   render: (args) => (
     <ProjectCard {...args}>
       <ProjectMonths months={MONTHS} unavailable />
-      <ProjectValues cashBalance={undefined} projectedFinalBalance={undefined} contractedContribution={undefined} totalRealized={undefined} instituteFee={undefined} />
-      <ProjectRubrics groups={[]} unavailable />
+      <ProjectValues projectedFinalBalance={undefined} contractedContribution={undefined} totalRealized={undefined} instituteFee={undefined} />
+      <ProjectIncurredCosts percent={undefined} />
     </ProjectCard>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('indisponível')).toBeInTheDocument()
-    await expect(canvas.getByText('Não foi possível carregar as rubricas.')).toBeInTheDocument()
+    await expect(canvas.getByText('Não foi possível carregar os custos incorridos.')).toBeInTheDocument()
+  },
+}
+
+export const ProjetoCritico: Story = {
+  args: { critical: true },
+  render: (args) => (
+    <ProjectCard {...args}>
+      <Sections />
+    </ProjectCard>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-slot="project-card"][data-critical="true"]')).toBeInTheDocument()
+  },
+}
+
+export const CustosIncorridosNoLimite: Story = {
+  render: (args) => (
+    <ProjectCard {...args}>
+      <ProjectIncurredCosts percent={20.72} amount={202_451.49} limitAmount={195_372.83} />
+    </ProjectCard>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Limite de 20% atingido')).toBeInTheDocument()
+    await expect(canvas.getByRole('meter', { name: 'Custos incorridos' })).toHaveAttribute('aria-valuenow', '20')
   },
 }
 
 export const DetalheDasRubricas: Story = {
   render: (args) => (
     <ProjectCard {...args}>
-      <Sections />
+      <ProjectRubrics groups={GROUPS} />
     </ProjectCard>
   ),
   play: async ({ canvasElement }) => {
